@@ -1,23 +1,28 @@
 use diesel::prelude::*;
 use crate::db::models::{User, NewUser};
-use sha2::digest::DynDigest;
-use sha2::Digest;
 use std::borrow::Borrow;
+use sha2::{Digest, Sha512};
+use std::str;
 
 pub fn create_user<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, active: bool, password: &'a str) -> User {
     use crate::schema::users;
 
 
+    let salt = "pepper";
+    let mut hasher = Sha512::new();
+    hasher.update(&password.as_bytes());
+    hasher.update(b"$");
+    hasher.update(salt.as_bytes());
 
-    // let mut hasher = Sha256::new();
-    // hasher.input_str(password);
-    // let hex = hasher.result_str();
+    let result = hasher.finalize();
+
+    let hashed_pass = format!("{:x}", result);
 
     let new_user = NewUser{
         name: name,
         comment: comment,
         active: active,
-        pass_hash: password
+        pass_hash: &hashed_pass
     };
 
 

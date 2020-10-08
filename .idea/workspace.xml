@@ -15,20 +15,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c463504d-a9dc-496b-9f2d-4d26d17bdc8f" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/aws.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/user-rust.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/bin/create_user.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/bin/show_users.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/db/database.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/db/lib.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/db/mod.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/db/models.rs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/test_hash.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/bin/create_user.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/create_user.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/db/database.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/database.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

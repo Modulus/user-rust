@@ -2,6 +2,7 @@ use std::io::{stdin, Read};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::database::create_user;
 
+
 fn main(){
     let connection = establish_connection();
     let name = "argo";
@@ -9,6 +10,8 @@ fn main(){
     let active = true;
     let password = "Super secret!";
 
-    create_user(&connection, name, comment, active, password);
+
+
+    create_user(&connection, name, comment, active, &password);
 
 }

@@ -10,3 +10,18 @@ rust diesel and actix web app with vue 3 front for showing how user registration
 2. CRUD api for users
 3. Login in actix
 4. vue frontend
+
+# Create containers
+docker-compose up -d
+
+# Create migrations for postgres
+diesel migrations run
+
+# To clear database
+diesel database reset
+
+# To show users
+cargo run --bin show_users
+
+# To create hardcoded users
+cargo run --bin create_users
