@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="CargoProjects">
+    <cargoProject FILE="$PROJECT_DIR$/Cargo.toml" />
+    <cargoProject FILE="$PROJECT_DIR$/src/lib/Cargo.toml" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c463504d-a9dc-496b-9f2d-4d26d17bdc8f" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/aws.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/user-rust.iml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docker-compose.yaml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/create_user.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/bin/show_users.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db/database.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db/lib.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db/mod.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/db/models.rs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/lib.rs" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Rust File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MacroExpansionManager">
+    <option name="directoryName" value="hyuyxt7z" />
+  </component>
+  <component name="ProjectId" id="1ib5ARTutA7TZcn97i3GhOOBy9b" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
+  </component>
+  <component name="RustProjectSettings">
+    <option name="toolchainHomeDirectory" value="$USER_HOME$/.cargo/bin" />
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c463504d-a9dc-496b-9f2d-4d26d17bdc8f" name="Default Changelist" comment="" />
+      <created>1602163307920</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1602163307920</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="-4081" y="529" key="#com.intellij.fileTypes.FileTypeChooser" timestamp="1602164093246">
+      <screen x="-5120" y="0" width="2560" height="1440" />
+    </state>
+    <state x="-4081" y="529" key="#com.intellij.fileTypes.FileTypeChooser/-2560.0.2560.1440/0.0.1792.1120/-5120.0.2560.1440@-5120.0.2560.1440" timestamp="1602164093246" />
+  </component>
+</project>
