@@ -11,4 +11,5 @@ diesel = { version = "1.4.4", features =  ["postgres", "numeric", "uuid", "quick
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.116", features = ["derive"] }
 sha2 = "0.9.1"
+bcrypt = "0.8.2"
 dotenv = "0.15.0"

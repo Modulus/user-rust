@@ -1,5 +1,8 @@
 use sha2::{Digest, Sha512};
 use std::str;
+
+
+
 fn main(){
 
     let password = "1234password";
@@ -11,7 +14,10 @@ fn main(){
 
     let hashed_pass = hasher.finalize();
 
-    let hash = format!("{:x}", hashed_pass);
+    let hashed_hex = format!("{:x}", hashed_pass);
 
-    println!("{:?}", hash);
+    println!("{:?}", hashed_hex);
+
+
+
 }
