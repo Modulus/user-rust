@@ -3,6 +3,7 @@ name = "user_rust"
 version = "0.1.0"
 authors = ["John Sigvald Skauge <johnsigvaldskauge@tv2.no>"]
 edition = "2018"
+default-run = "main"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
@@ -10,6 +11,10 @@ edition = "2018"
 diesel = { version = "1.4.4", features =  ["postgres", "numeric", "uuid", "quickcheck", "serde_json", "chrono"] }
 chrono = { version = "0.4", features = ["serde"] }
 serde = { version = "1.0.116", features = ["derive"] }
-sha2 = "0.9.1"
-bcrypt = "0.8.2"
+#sha2 = "0.9.1"
+#bcrypt = "0.8.2"
 dotenv = "0.15.0"
+rust-argon2 = "0.8"
+rand = "0.7"
+actix-web = "3"
+

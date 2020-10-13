@@ -1,22 +1,38 @@
-use diesel::prelude::*;
-use crate::db::models::{User, NewUser};
-use std::borrow::Borrow;
-use sha2::{Digest, Sha512};
 use std::str;
 
-pub fn create_user<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, active: bool, password: &'a str) -> User {
+use diesel::prelude::*;
+use crate::db::models::{User, NewUser, NewUserJson};
+use argon2::{self, Config};
+use rand::Rng; 
+use rand::distributions::Alphanumeric;
+
+pub fn create_user(conn: &PgConnection, user: NewUserJson) -> User {
     use crate::schema::users;
 
+    let salt_length : usize = 30;
+    let salt = create_salt(salt_length);
 
-    let salt = "pepper";
-    let mut hasher = Sha512::new();
-    hasher.update(&password.as_bytes());
-    hasher.update(b"$");
-    hasher.update(salt.as_bytes());
+    let hashed_pass = create_hash(&user.password, &salt);
 
-    let result = hasher.finalize();
+    let new_user = NewUser{
+        name: &user.name,
+        comment: &user.comment,
+        active: user.active,
+        pass_hash: &hashed_pass
+    };
 
-    let hashed_pass = format!("{:x}", result);
+    diesel::insert_into(users::table)
+        .values(&new_user)
+        .get_result(conn)
+        .expect("Error saving new user!")
+}
+pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, active: bool, password: &'a str) -> User {
+    use crate::schema::users;
+
+    let salt_length : usize = 30;
+    let salt = create_salt(salt_length);
+
+    let hashed_pass = create_hash("my password", &salt);
 
     let new_user = NewUser{
         name: name,
@@ -33,7 +49,17 @@ pub fn create_user<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, act
 
 }
 
-pub fn show_users(conn: &PgConnection){
+pub fn create_hash(password: &str, salt: &str) -> String {
+    let config = Config::default();
+    let hash = argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config).unwrap();
+    return hash
+}
+
+pub fn create_salt(length: usize) -> String {
+    return rand::thread_rng().sample_iter(&Alphanumeric).take(length).collect::<String>();
+}
+
+pub fn show_users(conn: &PgConnection) {
     use crate::schema::users::dsl::*;
     let result = users.filter(active.eq(true))
         .limit(10)
@@ -46,4 +72,14 @@ pub fn show_users(conn: &PgConnection){
         println!("Hash: {:?}", user.pass_hash);
         println!("Comment: {:?}", user.comment);
     }
+
+}
+
+pub fn get_all_users(conn: &PgConnection) -> Vec<User>{
+    use crate::schema::users::dsl::*;
+    let result = users.filter(active.eq(true))
+        .limit(10)
+        .load::<User>(conn).unwrap();
+
+    return result;
 }

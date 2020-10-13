@@ -25,3 +25,4 @@ cargo run --bin show_users
 
 # To create hardcoded users
 cargo run --bin create_users
+cargo run --bin test_argon2
