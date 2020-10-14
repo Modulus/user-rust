@@ -3,13 +3,13 @@ use user_rust::db::lib::establish_connection;
 use user_rust::db::database::{create_user_raw, get_all_users};
 use user_rust::db::models::{NewUserJson, UserJson};
 use actix_web::web::Json;
+use actix_files as fs;
 
-
-#[get("/")]
-async fn debug() -> impl Responder {
-    println!("Debug!!!");
-    format!("Hello wøøøøørking!!! {:?}", "Svada")
-}
+// #[get("/")]
+// async fn debug() -> impl Responder {
+//     println!("Debug!!!");
+//     format!("Hello wøøøøørking!!! {:?}", "Svada")
+// }
 
 
 #[get("/{id}/{name}/index.html")]
@@ -17,7 +17,6 @@ async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responde
     format!("Hello {}! id:{}", name, id)
 }
 
-#[post("/users/add")]
 async fn add_user(new_user: Json<NewUserJson>) -> Result<String> {
     println!("Inserting new user");
 
@@ -26,7 +25,6 @@ async fn add_user(new_user: Json<NewUserJson>) -> Result<String> {
     Ok(format!("Welcome {:?}", new_user.name))
 }
 
-#[get("/users")]
 pub async fn get_users() -> Result<Json<Vec<UserJson>>>{
     println!("Listing all users");
     let connection = establish_connection();
@@ -36,7 +34,7 @@ pub async fn get_users() -> Result<Json<Vec<UserJson>>>{
     let json_users = raw_users.into_iter().map( | user | UserJson {
         id: user.id,
         name: user.name.to_string(),
-        comment: user.comment.unwrap().to_string(),
+        comment: user.comment,
         active: user.active,
         password: "*******".to_string()
     }).collect();
@@ -60,12 +58,16 @@ async fn main() -> std::io::Result<()> {
 
     println!("Serving on 0.0.0.0:8080");
 
-    HttpServer::new(|| App::new()
-        .service(add_user)
-        .service(debug)
-        .service(get_users)
-        .service(index))
+        HttpServer::new(|| {
+            App::new()
+                .service(fs::Files::new("/", "./gui/dist"))
+                .service(web::resource("/users/add").route(web::post().to(add_user)))
+                .service(web::resource("/users").route(web::get().to(get_users)))
+                .service(index)
+        })
         .bind("0.0.0.0:8080")?
         .run()
         .await
+
+
 }

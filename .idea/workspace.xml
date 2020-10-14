@@ -15,19 +15,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c463504d-a9dc-496b-9f2d-4d26d17bdc8f" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/aws.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/aws.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/2020-10-08-135155_users/down.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/2020-10-08-135155_users/down.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/migrations/2020-10-08-135155_users/up.sql" beforeDir="false" afterPath="$PROJECT_DIR$/migrations/2020-10-08-135155_users/up.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bin/create_user.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/create_user.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bin/test_bcrypt.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bin/test_sha.rs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/bin/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/main.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/db/database.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/database.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/db/models.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/models.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.rs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/schema.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/schema.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -60,6 +54,10 @@
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/src" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/bin" />
     </key>
@@ -96,5 +94,9 @@
       <screen x="-5120" y="0" width="2560" height="1440" />
     </state>
     <state x="-4081" y="529" key="#com.intellij.fileTypes.FileTypeChooser/-2560.0.2560.1440/0.0.1792.1120/-5120.0.2560.1440@-5120.0.2560.1440" timestamp="1602164093246" />
+    <state x="-4133" y="352" width="586" height="735" key="find.popup" timestamp="1602625279905">
+      <screen x="-5120" y="0" width="2560" height="1440" />
+    </state>
+    <state x="-4133" y="352" width="586" height="735" key="find.popup/-2560.0.2560.1440/0.0.1792.1120/-5120.0.2560.1440@-5120.0.2560.1440" timestamp="1602625279905" />
   </component>
 </project>

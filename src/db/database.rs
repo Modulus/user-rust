@@ -75,6 +75,14 @@ pub fn show_users(conn: &PgConnection) {
 
 }
 
+pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Vec<User>{
+    use crate::schema::users::dsl::*;
+
+    let result = users.filter(name.eq(name)).limit(1).load::<User>(conn).unwrap();
+
+    return result
+}
+
 pub fn get_all_users(conn: &PgConnection) -> Vec<User>{
     use crate::schema::users::dsl::*;
     let result = users.filter(active.eq(true))

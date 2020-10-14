@@ -29,7 +29,7 @@ pub struct NewUser<'a> {
 pub struct UserJson {
     pub id: i32,
     pub name: String,
-    pub comment: String,
+    pub comment: Option<String>,
     pub active: bool,
     pub password: String
 }
