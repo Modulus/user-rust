@@ -5,6 +5,7 @@ use crate::db::models::{User, NewUser, NewUserJson};
 use argon2::{self, Config};
 use rand::Rng; 
 use rand::distributions::Alphanumeric;
+use crate::db::errors::DatabaseError;
 
 pub fn create_user(conn: &PgConnection, user: NewUserJson) -> User {
     use crate::schema::users;
@@ -75,19 +76,19 @@ pub fn show_users(conn: &PgConnection) {
 
 }
 
-pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Vec<User>{
+pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Result<Vec<User>, DatabaseError>{
     use crate::schema::users::dsl::*;
 
-    let result = users.filter(name.eq(name)).limit(1).load::<User>(conn).unwrap();
+    let result = users.filter(name.eq(name)).limit(1).load::<User>(conn)?;
 
-    return result
+    return Ok(result)
 }
 
-pub fn get_all_users(conn: &PgConnection) -> Vec<User>{
+pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, DatabaseError>{
     use crate::schema::users::dsl::*;
     let result = users.filter(active.eq(true))
         .limit(10)
-        .load::<User>(conn).unwrap();
+        .load::<User>(conn)?;
 
-    return result;
+    return Ok(result);
 }
