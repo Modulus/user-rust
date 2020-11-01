@@ -21,7 +21,7 @@ fn main(){
         password: "passw0rd".to_string()
     };
 
-    println!("{:?}", create_user(&connection, new_user));
+    println!("{:?}", create_user(&connection, &new_user));
 
     let new_user2 = NewUserJson {
         name : "trillian".to_string(),
@@ -30,6 +30,6 @@ fn main(){
         password: "idiots!".to_string()
     };
 
-    println!("{:?}", create_user(&connection, new_user2));
+    println!("{:?}", create_user(&connection, &new_user2));
 
 }
