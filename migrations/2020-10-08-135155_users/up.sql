@@ -17,3 +17,11 @@ CREATE TABLE messages (
         CONSTRAINT fk_sender FOREIGN KEY(sender_user_id) REFERENCES users(id),
         CONSTRAINT fk_receiver FOREIGN KEY(receiver_user_id) REFERENCES users(id)
 );
+
+CREATE TABLE friends (
+    user_id INT NOT NULL,
+    friend_id INT NOT NULL,
+    PRIMARY KEY (user_id, friend_id),
+        CONSTRAINT fk_user FOREIGN KEY(user_id) REFERENCES USERS(id),
+        CONSTRAINT fk_friend FOREIGN KEY(friend_id) REFERENCES USERS(id)
+);

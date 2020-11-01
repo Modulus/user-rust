@@ -1,4 +1,11 @@
 table! {
+    friends (user_id, friend_id) {
+        user_id -> Int4,
+        friend_id -> Int4,
+    }
+}
+
+table! {
     messages (id) {
         id -> Int4,
         header -> Varchar,
@@ -19,6 +26,7 @@ table! {
 }
 
 allow_tables_to_appear_in_same_query!(
+    friends,
     messages,
     users,
 );
