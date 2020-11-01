@@ -48,8 +48,7 @@ pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str,
 
     Ok(diesel::insert_into(users::table)
         .values(&new_user)
-        .get_result(conn)
-        .expect("Error saving new user!"))
+        .get_result(conn)?)
 
 }
 

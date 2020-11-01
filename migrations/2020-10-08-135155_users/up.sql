@@ -4,7 +4,8 @@ CREATE TABLE users (
     name VARCHAR NOT NULL,
     comment VARCHAR NULL,
     active BOOLEAN NOT NULL DEFAULT 'f',
-    pass_hash VARCHAR NOT NULL
+    pass_hash VARCHAR NOT NULL,
+    UNIQUE(name)
 );
 
 CREATE TABLE messages (
