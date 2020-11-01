@@ -1,7 +1,4 @@
 use crate::schema::users;
-use diesel::prelude::*;
-use diesel::serialize::{ToSql, Output, IsNull};
-use diesel::{serialize, deserialize};
 use serde::{Serialize, Deserialize};
 
 
@@ -41,3 +38,4 @@ pub struct NewUserJson {
     pub active: bool,
     pub password: String
 }
+

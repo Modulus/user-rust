@@ -5,8 +5,9 @@ use crate::db::models::{User, NewUser, NewUserJson};
 use argon2::{self, Config};
 use rand::Rng; 
 use rand::distributions::Alphanumeric;
+use crate::errors::BackendError;
 
-pub fn create_user(conn: &PgConnection, user: NewUserJson) -> User {
+pub fn create_user(conn: &PgConnection, user: NewUserJson) -> Result<User, BackendError> {
     use crate::schema::users;
 
     let salt_length : usize = 30;
@@ -18,41 +19,44 @@ pub fn create_user(conn: &PgConnection, user: NewUserJson) -> User {
         name: &user.name,
         comment: &user.comment,
         active: user.active,
-        pass_hash: &hashed_pass
+        pass_hash: &hashed_pass?
     };
+    
 
-    diesel::insert_into(users::table)
+
+    let result = diesel::insert_into(users::table)
         .values(&new_user)
-        .get_result(conn)
-        .expect("Error saving new user!")
+        .get_result(conn)?;
+
+    return Ok(result);
 }
-pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, active: bool, password: &'a str) -> User {
+pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str, active: bool, password: &'a str) -> Result<User, BackendError> {
     use crate::schema::users;
 
     let salt_length : usize = 30;
     let salt = create_salt(salt_length);
 
-    let hashed_pass = create_hash("my password", &salt);
+    let hashed_pass = create_hash(password, &salt)?;
 
     let new_user = NewUser{
         name: name,
         comment: comment,
         active: active,
-        pass_hash: &hashed_pass
+        pass_hash: &*hashed_pass
     };
 
 
-    diesel::insert_into(users::table)
+    Ok(diesel::insert_into(users::table)
         .values(&new_user)
         .get_result(conn)
-        .expect("Error saving new user!")
+        .expect("Error saving new user!"))
 
 }
 
-pub fn create_hash(password: &str, salt: &str) -> ResulsString {
+pub fn create_hash(password: &str, salt: &str) -> Result<String, BackendError> {
     let config = Config::default();
     let hash = argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config)?;
-    return hash
+    return Ok(hash)
 }
 
 pub fn create_salt(length: usize) -> String {
@@ -75,19 +79,19 @@ pub fn show_users(conn: &PgConnection) {
 
 }
 
-pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Result<Vec<User>, String>{
+pub fn get_user_by_name(conn: &PgConnection, _name: &str) -> Result<Vec<User>, BackendError>{
     use crate::schema::users::dsl::*;
 
-    return users.filter(name.eq(name)).limit(1).load::<User>(conn)?;
+    let result = users.filter(name.eq(_name)).limit(1).load::<User>(conn)?;
 
-
+    return Ok(result)
 }
 
-pub fn get_all_users(conn: &PgConnection) -> Vec<User>{
+pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError>{
     use crate::schema::users::dsl::*;
     let result = users.filter(active.eq(true))
         .limit(10)
-        .load::<User>(conn).unwrap();
+        .load::<User>(conn)?;
 
-    return result;
+    return Ok(result);
 }

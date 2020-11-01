@@ -1,8 +1,7 @@
-use std::io::{stdin, Read};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::database::create_user;
 use user_rust::db::database::create_user_raw;
-use user_rust::db::models::{NewUser, NewUserJson};
+use user_rust::db::models::{NewUserJson};
 
 fn main(){
     let connection = establish_connection();
@@ -13,24 +12,24 @@ fn main(){
 
 
 
-    create_user_raw(&connection, name, comment, active, &password);
+    println!("{:?}", create_user_raw(&connection, name, comment, active, &password));
 
-    let newUser = NewUserJson {
+    let new_user = NewUserJson {
         name : "ford".to_string(),
         comment : "Yay".to_string(),
         active : true,
         password: "passw0rd".to_string()
     };
 
-    create_user(&connection, newUser);
+    println!("{:?}", create_user(&connection, new_user));
 
-    let newUser2 = NewUserJson {
+    let new_user2 = NewUserJson {
         name : "trillian".to_string(),
         comment : "Yay".to_string(),
         active : true,
         password: "idiots!".to_string()
     };
 
-    create_user(&connection, newUser2);
+    println!("{:?}", create_user(&connection, new_user2));
 
 }
