@@ -17,11 +17,8 @@
     <list default="true" id="c463504d-a9dc-496b-9f2d-4d26d17bdc8f" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/aws.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/aws.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.lock" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Cargo.toml" beforeDir="false" afterPath="$PROJECT_DIR$/Cargo.toml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/bin/main.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/main.rs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/bin/test_argon2.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/bin/test_argon2.rs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/db/database.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/database.rs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/db/models.rs" beforeDir="false" afterPath="$PROJECT_DIR$/src/db/models.rs" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,7 +47,7 @@
     <property name="ASKED_SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/bin" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="org.rust.cargo.project.model.PROJECT_DISCOVERY" value="true" />
   </component>
   <component name="RecentsManager">
@@ -94,9 +91,14 @@
       <screen x="-5120" y="0" width="2560" height="1440" />
     </state>
     <state x="-4081" y="529" key="#com.intellij.fileTypes.FileTypeChooser/-2560.0.2560.1440/0.0.1792.1120/-5120.0.2560.1440@-5120.0.2560.1440" timestamp="1602164093246" />
-    <state x="-4133" y="352" width="586" height="735" key="find.popup" timestamp="1602625279905">
-      <screen x="-5120" y="0" width="2560" height="1440" />
+    <state x="987" y="343" width="586" height="717" key="find.popup" timestamp="1602698104414">
+      <screen x="0" y="0" width="2560" height="1404" />
     </state>
     <state x="-4133" y="352" width="586" height="735" key="find.popup/-2560.0.2560.1440/0.0.1792.1120/-5120.0.2560.1440@-5120.0.2560.1440" timestamp="1602625279905" />
+    <state x="987" y="343" width="586" height="717" key="find.popup/0.0.2560.1404/2560.0.2560.1440@0.0.2560.1404" timestamp="1602698104414" />
+    <state x="943" y="326" key="run.anything.popup" timestamp="1602698228840">
+      <screen x="0" y="0" width="2560" height="1404" />
+    </state>
+    <state x="943" y="326" key="run.anything.popup/0.0.2560.1404/2560.0.2560.1440@0.0.2560.1404" timestamp="1602698228840" />
   </component>
 </project>

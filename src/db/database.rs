@@ -49,9 +49,9 @@ pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str,
 
 }
 
-pub fn create_hash(password: &str, salt: &str) -> String {
+pub fn create_hash(password: &str, salt: &str) -> ResulsString {
     let config = Config::default();
-    let hash = argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config).unwrap();
+    let hash = argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config)?;
     return hash
 }
 
@@ -75,12 +75,12 @@ pub fn show_users(conn: &PgConnection) {
 
 }
 
-pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Vec<User>{
+pub fn get_user_by_name(conn: &PgConnection, name: &str) -> Result<Vec<User>, String>{
     use crate::schema::users::dsl::*;
 
-    let result = users.filter(name.eq(name)).limit(1).load::<User>(conn).unwrap();
+    return users.filter(name.eq(name)).limit(1).load::<User>(conn)?;
 
-    return result
+
 }
 
 pub fn get_all_users(conn: &PgConnection) -> Vec<User>{
