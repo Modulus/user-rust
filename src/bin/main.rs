@@ -1,6 +1,6 @@
 use actix_web::{get, web, App, HttpServer, Responder, Result, middleware::Logger};
 use user_rust::db::lib::establish_connection;
-use user_rust::db::database::{create_user_raw, get_all_users};
+use user_rust::db::users::{create_user_raw, get_all_users};
 use user_rust::db::models::{NewUserJson, UserJson};
 use actix_web::web::Json;
 use actix_files as fs;

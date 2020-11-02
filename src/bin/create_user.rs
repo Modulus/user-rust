@@ -1,6 +1,6 @@
 use user_rust::db::lib::establish_connection;
-use user_rust::db::database::create_user;
-use user_rust::db::database::create_user_raw;
+use user_rust::db::users::create_user;
+use user_rust::db::users::create_user_raw;
 use user_rust::db::models::{NewUserJson};
 
 fn main(){

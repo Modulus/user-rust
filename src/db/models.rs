@@ -1,4 +1,5 @@
 use crate::schema::users;
+use crate::schema::friends;
 use serde::{Serialize, Deserialize};
 
 
@@ -38,4 +39,12 @@ pub struct NewUserJson {
     pub active: bool,
     pub password: String
 }
+
+#[table_name= "friends"]
+#[derive(Insertable, Debug, Serialize, Queryable)]
+pub struct NewFriend {
+    pub user_id: i32,
+    pub friend_id: i32
+}
+
 

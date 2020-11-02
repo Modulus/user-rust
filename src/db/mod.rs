@@ -1,3 +1,5 @@
 pub mod models;
 pub mod lib;
-pub mod database;
+pub mod users;
+pub mod friends;
+pub mod messages;

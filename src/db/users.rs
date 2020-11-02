@@ -105,7 +105,7 @@ pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError>{
 #[cfg(test)]
 mod tests {
     use crate::db::models::{NewUser, NewUserJson};
-    use crate::db::database::{create_user, delete_user_by_name, get_user_by_name};
+    use crate::db::users::{create_user, delete_user_by_name, get_user_by_name};
     use crate::db::lib::establish_connection;
 
     #[test]
