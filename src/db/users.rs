@@ -124,7 +124,9 @@ mod tests {
             password: "supersecret".to_string()
         };
         let result = create_user(&conn, &new_user);
-
+        if result.is_err() {
+            println!("Failed!: {:?}", result.err())
+        }
         assert!(result.is_ok());
         let user = result.unwrap();
         assert_eq!(user.name, new_user.name);
