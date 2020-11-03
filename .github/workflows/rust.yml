@@ -23,7 +23,6 @@ jobs:
     services:
       postgres:
         image: postgres:13.0
-        container_name: postgres
         ports:
           - "5432:5432"
         environment:
