@@ -5,7 +5,7 @@ use crate::db::models::{User, NewUser, NewUserJson};
 use argon2::{self, Config};
 use rand::Rng; 
 use rand::distributions::Alphanumeric;
-use crate::errors::BackendError;
+use crate::errors::{BackendError, BackendErrorKind};
 
 pub fn create_user(conn: &PgConnection, user: &NewUserJson) -> Result<User, BackendError> {
     use crate::schema::users;
@@ -76,6 +76,16 @@ pub fn show_users(conn: &PgConnection) {
         println!("Comment: {:?}", user.comment);
     }
 
+}
+
+
+pub fn get_user_by_id(conn: &PgConnection, _id: i32) -> Result<User, BackendError>{
+    use crate::schema::users::dsl::*;
+
+    let result = users.filter(id.eq(_id)).limit(1).load::<User>(conn)?;
+
+    //TODO: Rewrite this!!!
+    return Ok(result.first().unwrap().clone())
 }
 
 pub fn get_user_by_name(conn: &PgConnection, _name: &str) -> Result<Vec<User>, BackendError>{
