@@ -1,11 +1,13 @@
 use std::str;
 
 use diesel::prelude::*;
+use chrono::prelude::*;
 use crate::db::models::{User, NewUser, NewUserJson};
 use argon2::{self, Config};
 use rand::Rng; 
 use rand::distributions::Alphanumeric;
-use crate::errors::{BackendError, BackendErrorKind};
+use crate::errors::{BackendError};
+use crate::utils::lib::date_now;
 
 pub fn create_user(conn: &PgConnection, user: &NewUserJson) -> Result<User, BackendError> {
     use crate::schema::users;
@@ -19,7 +21,8 @@ pub fn create_user(conn: &PgConnection, user: &NewUserJson) -> Result<User, Back
         name: &user.name,
         comment: &user.comment,
         active: user.active,
-        pass_hash: &hashed_pass?
+        pass_hash: &hashed_pass?,
+        created:  chrono::offset::Utc::now().naive_utc()
     };
     
 
@@ -42,7 +45,8 @@ pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str,
         name: name,
         comment: comment,
         active: active,
-        pass_hash: &*hashed_pass
+        pass_hash: &*hashed_pass,
+        created:  chrono::offset::Utc::now().naive_utc()
     };
 
 
@@ -54,8 +58,7 @@ pub fn create_user_raw<'a>(conn: &PgConnection, name: &'a str, comment: &'a str,
 
 pub fn create_hash(password: &str, salt: &str) -> Result<String, BackendError> {
     let config = Config::default();
-    let hash = argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config)?;
-    return Ok(hash)
+    Ok(argon2::hash_encoded(&password.as_bytes(), &salt.as_bytes(), &config)?)
 }
 
 pub fn create_salt(length: usize) -> String {
@@ -81,19 +84,13 @@ pub fn show_users(conn: &PgConnection) {
 
 pub fn get_user_by_id(conn: &PgConnection, _id: i32) -> Result<User, BackendError>{
     use crate::schema::users::dsl::*;
-
-    let result = users.filter(id.eq(_id)).limit(1).load::<User>(conn)?;
-
-    //TODO: Rewrite this!!!
-    return Ok(result.first().unwrap().clone())
+    Ok(users.filter(id.eq(_id)).first::<User>(conn)?)
 }
 
 pub fn get_user_by_name(conn: &PgConnection, _name: &str) -> Result<Vec<User>, BackendError>{
     use crate::schema::users::dsl::*;
 
-    let result = users.filter(name.eq(_name)).limit(1).load::<User>(conn)?;
-
-    return Ok(result)
+    return Ok(users.filter(name.eq(_name)).limit(1).load::<User>(conn)?)
 }
 
 pub fn delete_user_by_name(conn: &PgConnection, _name: &str) {
@@ -105,11 +102,10 @@ pub fn delete_user_by_name(conn: &PgConnection, _name: &str) {
 
 pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError>{
     use crate::schema::users::dsl::*;
-    let result = users.filter(active.eq(true))
+    Ok(users.filter(active.eq(true))
         .limit(10)
-        .load::<User>(conn)?;
+        .load::<User>(conn)?)
 
-    return Ok(result);
 }
 
 #[cfg(test)]

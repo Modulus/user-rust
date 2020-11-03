@@ -7,6 +7,7 @@ use rand::Rng;
 use rand::distributions::Alphanumeric;
 use crate::errors::BackendError;
 use crate::db::users::{get_user_by_name, get_user_by_id};
+use crate::utils::lib::date_now;
 
 pub fn add_friend(friends: Friend, conn: &PgConnection) -> Result<String, BackendError>{
     use crate::schema::friends;

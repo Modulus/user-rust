@@ -15,9 +15,10 @@ fn main(){
     let user1 = users.get(0).unwrap();
     let user2 = users.get(1).unwrap();
 
-    let header = "Hello".to_string();
-    let message = "First message ever!!! Let's be fiwends".to_string();
 
-    send_message(user1, user2, header, message, &connection);
+    send_message(user1, user2, "Hello".to_string(),
+                 "First message ever!!! Let's be fiwends".to_string(), &connection);
+
+    send_message(user2, user1, "Hello back at ya!".to_string(), "Aesome stuffs".to_string(), &connection);
 
 }

@@ -4,3 +4,4 @@ extern crate dotenv;
 pub mod db;
 pub mod schema;
 pub mod errors;
+pub mod utils;

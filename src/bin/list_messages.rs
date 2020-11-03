@@ -1,0 +1,21 @@
+use user_rust::db::lib::establish_connection;
+use user_rust::db::users::get_all_users;
+use user_rust::db::messages::list_messages;
+
+fn main(){
+    let connection = establish_connection();
+    let users = get_all_users(&connection).unwrap();
+
+    for user in users {
+        let messages = list_messages(&user, &connection).unwrap();
+        if messages.len() > 0 {
+            println!("{:?}", messages)
+        }
+        else {
+            println!("User: {:?} has no messages :(", &user)
+        }
+    }
+
+
+
+}

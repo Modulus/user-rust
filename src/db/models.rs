@@ -2,8 +2,11 @@ use crate::schema::users;
 use crate::schema::friends;
 use crate::schema::messages;
 use serde::{Serialize, Deserialize};
+use diesel::prelude::*;
+use chrono::prelude::*;
 
 //TODO: Add date types for all models
+
 
 
 #[table_name= "users"]
@@ -13,7 +16,8 @@ pub struct User{
     pub name: String,
     pub comment: Option<String>,
     pub active: bool,
-    pub pass_hash: String
+    pub pass_hash: String, //Needs to be option to be excluded inn some read calls
+    pub created: NaiveDateTime
 }
 
 #[derive(Insertable,Debug, Serialize)]
@@ -22,26 +26,29 @@ pub struct NewUser<'a> {
     pub name: &'a str,
     pub comment: &'a str,
     pub active: bool,
-    pub pass_hash: &'a str // Used for the password string, needs same name to be serializable
+    pub pass_hash: &'a str, // Used for the password string, needs same name to be serializable
+    pub created: NaiveDateTime
 }
 
 #[table_name= "friends"]
 #[derive(Insertable, Debug, Serialize, Queryable)]
 pub struct Friend {
     pub user_id: i32,
-    pub friend_id: i32
+    pub friend_id: i32,
+    pub added: NaiveDateTime
 }
 
 
 #[derive(Insertable, Debug, Serialize, Queryable)]
 #[table_name = "messages"]
-
 pub struct Message {
     pub id: i32,
     pub header: String,
     pub message: String,
     pub sender_user_id: i32,
-    pub receiver_user_id: i32
+    pub receiver_user_id: i32,
+    pub sent: NaiveDateTime,
+    pub modified: Option<NaiveDateTime>
 }
 
 
@@ -51,7 +58,9 @@ pub struct NewMessage {
     pub header: String,
     pub message: String,
     pub sender_user_id: i32,
-    pub receiver_user_id: i32
+    pub receiver_user_id: i32,
+    pub sent: NaiveDateTime,
+    pub modified: Option<NaiveDateTime>
 }
 
 
@@ -63,7 +72,8 @@ pub struct UserJson {
     pub name: String,
     pub comment: Option<String>,
     pub active: bool,
-    pub password: String
+    pub password: String,
+    // pub create: chrono::NaiveDateTime,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -71,6 +81,7 @@ pub struct NewUserJson {
     pub name: String,
     pub comment: String,
     pub active: bool,
-    pub password: String
+    pub password: String,
+    // pub created: chrono::NaiveDateTime
 }
 

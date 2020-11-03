@@ -4,6 +4,8 @@ use user_rust::db::users::get_all_users;
 use user_rust::db::friends::add_friend;
 use user_rust::db::models::{NewUserJson, Friend, User};
 use user_rust::errors::BackendError;
+use user_rust::utils::lib::date_now;
+
 
 fn main(){
     let connection = establish_connection();
@@ -17,7 +19,7 @@ fn main(){
                         inner_users.into_iter().for_each(| inner_user| {
                             if user.id != inner_user.id {
                                 println!("Adding user");
-                                let friends = Friend { user_id: user.id, friend_id: inner_user.id};
+                                let friends = Friend { user_id: user.id, friend_id: inner_user.id, added:  date_now()};
                                 println!("{:?}", add_friend(friends, &connection));
                             }
                         })
