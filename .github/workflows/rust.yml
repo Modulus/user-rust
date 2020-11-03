@@ -10,8 +10,8 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
-    build-test: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - name: Build
@@ -20,4 +20,13 @@ jobs:
       run: cargo test --verbose
     - name: Build docker container
       run: docker build . --file Dockerfile --tag user-rust:latest
-
+    services:
+      postgres:
+        image: postgres:13.0
+        container_name: postgres
+        ports:
+          - "5432:5432"
+        environment:
+          POSTGRES_USER: user
+          POSTGRES_DB: user
+          POSTGRES_PASSWORD: user
