@@ -1,9 +1,5 @@
 use user_rust::db::lib::establish_connection;
-use user_rust::db::users::create_user;
 use user_rust::db::users::get_all_users;
-use user_rust::db::friends::add_friend;
-use user_rust::db::models::{NewUserJson, Friend, User, NewMessage};
-use user_rust::errors::BackendError;
 use user_rust::db::messages::send_message;
 
 
