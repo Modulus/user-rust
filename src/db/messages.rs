@@ -9,7 +9,7 @@ pub fn send_message(
     _header: String,
     _contenty: String,
     conn: &PgConnection,
-) {
+) -> Result<usize, BackendError> {
     let new_message = NewMessage {
         header: _header,
         message: _contenty,
@@ -21,11 +21,9 @@ pub fn send_message(
 
     use crate::schema::messages;
 
-    let result = diesel::insert_into(messages::table)
+    Ok(diesel::insert_into(messages::table)
         .values(new_message)
-        .execute(conn);
-
-    println!("Result of insert of message: {:?}", result);
+        .execute(conn)?)
 }
 
 pub fn list_sent_messages(user: &User, conn: &PgConnection) -> Result<Vec<Message>, BackendError> {

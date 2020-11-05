@@ -3,7 +3,7 @@ use crate::db::users::get_user_by_id;
 use crate::errors::BackendError;
 use diesel::prelude::*;
 
-pub fn add_fiend(user: &User, friend: &User, conn: &PgConnection) -> Result<String, BackendError> {
+pub fn add_fiend(user: &User, friend: &User, conn: &PgConnection) -> Result<usize, BackendError> {
     let new_friend = Friend {
         user_id: user.id,
         friend_id: friend.id,
@@ -13,24 +13,22 @@ pub fn add_fiend(user: &User, friend: &User, conn: &PgConnection) -> Result<Stri
     return add_friend_by_id(new_friend, conn);
 }
 
-pub fn add_friend_by_id(friends: Friend, conn: &PgConnection) -> Result<String, BackendError> {
+pub fn add_friend_by_id(friends: Friend, conn: &PgConnection) -> Result<usize, BackendError> {
     use crate::schema::friends;
 
-    let result = diesel::insert_into(friends::table)
+    return Ok(diesel::insert_into(friends::table)
         .values(&friends)
-        .execute(conn)?;
-
-    println!("Result for adding friend was: {:?}", result);
-
-    return Ok("Added".to_string());
+        .execute(conn)?);
 }
+
+// pub fn get_friend_by_id(friend_id: i32, conn: &PgConnection) -> Result<User, BackendError> {}
 
 pub fn list_friends(user: &User, conn: &PgConnection) -> Result<Vec<User>, BackendError> {
     use crate::schema::friends::dsl::*;
 
     let users_friends: Vec<Friend> = friends
         .filter(user_id.eq(user.id))
-        .limit(10)
+        .limit(25)
         .load::<Friend>(conn)
         .expect("Error loading fiwends!");
 
@@ -46,6 +44,54 @@ pub fn list_friends(user: &User, conn: &PgConnection) -> Result<Vec<User>, Backe
 
     return Ok(friend_list);
 }
+
+pub fn list_friends_by_id(id: i32, conn: &PgConnection) -> Result<Vec<User>, BackendError> {
+    use crate::schema::friends::dsl::*;
+
+    let users_friends: Vec<Friend> = friends
+        .filter(user_id.eq(id))
+        .limit(25)
+        .load::<Friend>(conn)
+        .expect("Error loading fiwends!");
+
+    println!("Listing friends: {:?}", users_friends);
+
+    let mut friend_list: Vec<User> = Vec::new();
+
+    for friend in users_friends {
+        let user_from_id = get_user_by_id(conn, friend.friend_id)?;
+        println!("Found friend: {:?}", user_from_id);
+        friend_list.push(user_from_id);
+    }
+
+    return Ok(friend_list);
+}
+
+//TODO: TEST
+// pub fn list_friends_by_id_safe(
+//     id: i32,
+//     conn: &PgConnection,
+// ) -> Result<Vec<UserSafe>, BackendError> {
+//     use crate::schema::friends::dsl::*;
+//
+//     let users_friends: Vec<Friend> = friends
+//         .filter(user_id.eq(id))
+//         .limit(25)
+//         .load::<Friend>(conn)
+//         .expect("Error loading fiwends!");
+//
+//     println!("Listing friends: {:?}", users_friends);
+//
+//     let mut friend_list: Vec<UserSafe> = Vec::new();
+//
+//     for friend in users_friends {
+//         let user_from_id = get_user_by_id_safe(conn, friend.friend_id)?;
+//         println!("Found friend: {:?}", user_from_id);
+//         friend_list.push(user_from_id);
+//     }
+//
+//     return Ok(friend_list);
+// }
 
 pub fn remove_friend(
     owner: &User,

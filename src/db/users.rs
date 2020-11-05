@@ -90,13 +90,27 @@ pub fn show_users(conn: &PgConnection) {
 
 pub fn get_user_by_id(conn: &PgConnection, _id: i32) -> Result<User, BackendError> {
     use crate::schema::users::dsl::*;
-    Ok(users.filter(id.eq(_id)).first::<User>(conn)?)
+    Ok(users
+        .filter(id.eq(_id))
+        // .select((id, name, comment, active, created))
+        .first::<User>(conn)?)
 }
+
+// pub fn get_user_by_id_safe(conn: &PgConnection, _id: i32) -> Result<UserSafe, BackendError> {
+//     use crate::schema::users::dsl::*;
+//     Ok(users
+//         .filter(id.eq(_id))
+//         .select((id, name, comment, created))
+//         .first::<UserSafe>(conn)?)
+// }
 
 pub fn get_user_by_name(conn: &PgConnection, _name: &str) -> Result<User, BackendError> {
     use crate::schema::users::dsl::*;
 
-    return Ok(users.filter(name.eq(_name)).first::<User>(conn)?);
+    return Ok(users
+        .filter(name.eq(_name))
+        // .select((id, name, comment, active, created))
+        .first::<User>(conn)?);
 }
 
 pub fn delete_user_by_name(conn: &PgConnection, _name: &str) -> Result<usize, BackendError> {
@@ -107,8 +121,21 @@ pub fn delete_user_by_name(conn: &PgConnection, _name: &str) -> Result<usize, Ba
 
 pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError> {
     use crate::schema::users::dsl::*;
-    Ok(users.filter(active.eq(true)).limit(10).load::<User>(conn)?)
+    Ok(users
+        .filter(active.eq(true))
+        // .select((id, name, comment, active, created))
+        .limit(25)
+        .load::<User>(conn)?)
 }
+
+// pub fn get_all_users_safe(conn: &PgConnection) -> Result<Vec<UserSafe>, BackendError> {
+//     use crate::schema::users::dsl::*;
+//     Ok(users
+//         .filter(active.eq(true))
+//         .select((id, name, comment, created))
+//         .limit(25)
+//         .load::<UserSafe>(conn)?)
+// }
 
 #[cfg(test)]
 mod tests {
