@@ -11,7 +11,7 @@ env:
   DATABASE_URL: postgres://user:user@postgres/user
 
 jobs:
-  build:
+  buildtest:
     runs-on: ubuntu-latest
     container: rust:1.47-buster
     services:
@@ -33,5 +33,19 @@ jobs:
       run: diesel migration run
     - name: Run tests
       run: cargo test --verbose
-    - name: Build docker container
-      run: docker build . --file Dockerfile --tag user-rust:latest
+  package:      
+    if:
+    needs: buildtest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@2
+      - name: login
+        uses: docker/login-action@1
+        with: 
+          registry: ghrc.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Docker build
+        run: docker build -t ghcr.io/modulus/user-rust:latest .
+      - name: Docker push
+        run: docker push ghcr.io/modulus/user-rust:latest
