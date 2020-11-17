@@ -11,7 +11,7 @@ env:
   DATABASE_URL: postgres://user:user@postgres/user
 
 jobs:
-  buildtest:
+  test:
     runs-on: ubuntu-latest
     container: rust:1.47-buster
     services:
@@ -25,17 +25,22 @@ jobs:
           POSTGRES_PASSWORD: user
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      run: cargo build --verbose
     - name: Install diesel
       run: cargo install diesel_cli
     - name: Prepare database
       run: diesel migration run
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}      
     - name: Run tests
       run: cargo test --verbose
   package:      
     if:
-    needs: buildtest
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
