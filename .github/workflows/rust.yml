@@ -38,9 +38,9 @@ jobs:
     needs: buildtest
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@2
+      - uses: actions/checkout@v2
       - name: login
-        uses: docker/login-action@1
+        uses: docker/login-action@v1
         with: 
           registry: ghrc.io
           username: ${{ github.repository_owner }}
