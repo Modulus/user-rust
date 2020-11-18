@@ -1,0 +1,56 @@
+name: Master
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+env:
+  CARGO_TERM_COLOR: always
+  DATABASE_URL: postgres://user:user@postgres/user
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: rust:1.47-buster
+    services:
+      postgres:
+        image: postgres:13.0
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_USER: user
+          POSTGRES_DB: user
+          POSTGRES_PASSWORD: user
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install diesel
+      run: cargo install diesel_cli
+    - name: Prepare database
+      run: diesel migration run
+    - uses: actions/cache@v2
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}      
+    - name: Run tests
+      run: cargo test --verbose
+  package:      
+    if:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: login
+        uses: docker/login-action@v1
+        with: 
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.CR_PAT }}
+      - name: Docker build
+        run: docker build -t ghcr.io/modulus/user-rust:latest .
+      - name: Docker push
+        run: docker push ghcr.io/modulus/user-rust:latest

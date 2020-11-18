@@ -1,10 +1,12 @@
-name: Rust
+name: Master
 
 on:
   push:
-    branches: [ master ]
+    tags:
+      - v[0-9].[0-9].[0-9]
   pull_request:
-    branches: [ master ]
+    tags: 
+      - v[0-9].[0-9].[0-9]
 
 env:
   CARGO_TERM_COLOR: always
@@ -51,6 +53,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
       - name: Docker build
-        run: docker build -t ghcr.io/modulus/user-rust:latest .
+        run: docker build -t ghcr.io/modulus/user-rust:${{ GITHUB_REF }} .
       - name: Docker push
-        run: docker push ghcr.io/modulus/user-rust:latest
+        run: docker push ghcr.io/modulus/user-rust:${{ GITHUB_REF }}
