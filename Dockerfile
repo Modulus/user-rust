@@ -9,6 +9,7 @@ RUN cargo build --release && cp -r /opt/app/gui /opt/app/target/release
 
 FROM ubuntu:20.04 as runner
 WORKDIR /opt/app
+RUN apt update && apt install postgresql-client -y
 COPY --from=builder /opt/app/target/release /opt/app
-CMD /opt/app/target/release/main
+CMD /opt/app/main
 EXPOSE 8080
