@@ -9,6 +9,6 @@ RUN cargo build --release && cp -r /opt/app/gui /opt/app/target/release
 
 FROM ubuntu:20.04 as runner
 WORKDIR /opt/app
-COPY --from=builder /opt/app/target/ /opt/app
-CMD ./opt/app/target/release/main
+COPY --from=builder /opt/app/target/release /opt/app
+CMD /opt/app/target/release/main
 EXPOSE 8080
