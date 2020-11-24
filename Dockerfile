@@ -11,6 +11,6 @@ FROM ubuntu:20.04 as runner
 WORKDIR /opt/app
 RUN apt update && apt install postgresql-client -y
 COPY --from=builder /opt/app/target/release /opt/app
-RUN ls -s /opt/apt
+RUN ls -s /opt/app
 CMD /opt/app/main
 EXPOSE 8080
