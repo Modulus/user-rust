@@ -1,0 +1,63 @@
+<template>
+  <div class="ui container">
+    <h1>{{ msg }}</h1>
+
+
+    <form class="ui large form">
+      <div class="ui  two fields">
+        <div class="field">
+          <input class="ui left input" type="text" placeholder="Username"/>
+        </div>
+        <div class="field">
+          <input class="ui left input" type="password" placeholder="Password"/>
+        </div>   
+      </div>
+      <div class=" ">
+        <button v-on:click="login()" class="ui button pink left floated">Login</button>  
+        <button v-on:click="register()" class="ui button green left floated">Register</button>
+      </div> 
+            
+    
+    </form>
+
+  </div>
+
+</template>
+
+<script>
+export default {
+  name: 'Home',
+  props: {
+    msg: String
+  },
+  methods: {
+    register: function(){
+      alert("Registering new user")
+    },
+    login: function(){
+      alert("Attembing to login!")
+    }
+
+  }
+}
+</script>
+
+<!-- Add "scoped" attribute to limit CSS to this component only -->
+<style scoped>
+h3 {
+  margin: 40px 0 0;
+}
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+li {
+  display: inline-block;
+  margin: 0 10px;
+}
+a {
+  color: #42b983;
+}
+
+
+</style>
