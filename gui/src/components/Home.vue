@@ -1,15 +1,16 @@
 <template>
   <div class="ui container">
     <h1>{{ msg }}</h1>
-
+    {{ username }}
+    {{ password }}
 
     <form class="ui large form">
       <div class="ui  two fields">
         <div class="field">
-          <input class="ui left input" type="text" placeholder="Username"/>
+          <input class="ui left input" v-model="username" type="text" placeholder="Username"/>
         </div>
         <div class="field">
-          <input class="ui left input" type="password" placeholder="Password"/>
+          <input class="ui left input" v-model="password" type="password" placeholder="Password"/>
         </div>   
       </div>
       <div class=" ">
@@ -27,12 +28,29 @@
 <script>
 export default {
   name: 'Home',
+  data() {
+    return {
+      username: "",
+      password: ""
+    }
+  },
   props: {
     msg: String
   },
   methods: {
     register: function(){
-      alert("Registering new user")
+      console.log(this.username)
+      console.log(this.password)
+      fetch("http://localhost:8080/users/add", {
+          headers: { "Content-Type": "application/json; charset=utf-8" },
+          method: 'POST',
+          body: JSON.stringify({
+            username: this.username,
+            password: this.password,
+            active: true,
+            comment: "New user"
+          })
+        })
     },
     login: function(){
       alert("Attembing to login!")

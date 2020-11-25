@@ -1,6 +1,8 @@
 use actix_files as fs;
 use actix_web::web::Json;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
+use actix_web::http::header;
+use actix_cors::Cors;
 use actix_web_prom::PrometheusMetrics;
 use futures::future;
 use std::borrow::Borrow;
@@ -170,6 +172,8 @@ fn health() -> HttpResponse {
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("Serving api on 0.0.0.0:8080");
+
+
     // println!("Serving metrics on 0.0.0.0:3000");
     std::env::set_var("RUST_LOG", "my_errors=debug,actix_web=info");
     std::env::set_var("RUST_BACKTRACE", "1");
@@ -182,6 +186,12 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(prometheus.clone())
             .wrap(Logger::default())
+            .wrap(Cors::default()
+                .allowed_origin("*")
+                .allowed_methods(vec!["GET", "POST"])
+                .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
+                .allowed_header(header::CONTENT_TYPE)
+                .max_age(3600))
             .route("/login", web::post().to(login))
             .route("/users/add", web::post().to(add_user))
             .route("/users", web::get().to(get_users))
