@@ -20,8 +20,8 @@ actix-http = "2.1.0"
 actix-files = "0.4.0"
 jsonwebtoken = "7.2.0"
 futures = "0.3.7"
-prometheus = "0.10.0"
-
+#prometheus = "0.10.0"
+actix-web-prom = "0.5"
 #Logging
 env_logger = "0.7.1"
 log = { version = "0.4.8", features = ["max_level_debug", "release_max_level_debug"] }

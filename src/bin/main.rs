@@ -1,8 +1,10 @@
 use actix_files as fs;
 use actix_web::web::Json;
-use actix_web::{get, middleware::Logger, web, App, HttpServer, Responder, Result};
+use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
+use actix_web_prom::PrometheusMetrics;
 use futures::future;
 use std::borrow::Borrow;
+use std::collections::HashMap;
 use user_rust::db::friends::{add_fiend, list_friends, list_friends_by_id};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
@@ -161,15 +163,24 @@ pub async fn debug() -> Result<String> {
     return Ok(String::from("Debug"));
 }
 
+fn health() -> HttpResponse {
+    HttpResponse::Ok().finish()
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     println!("Serving api on 0.0.0.0:8080");
-    println!("Serving metrics on 0.0.0.0:3000");
+    // println!("Serving metrics on 0.0.0.0:3000");
     std::env::set_var("RUST_LOG", "my_errors=debug,actix_web=info");
     std::env::set_var("RUST_BACKTRACE", "1");
+    let mut labels = HashMap::new();
+    labels.insert("app".to_string(), "rust-user".to_string());
+    let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
     // env_logger::init();
-    let main_server = HttpServer::new(|| {
+    // let main_server = HttpServer::new(move || {
+    HttpServer::new(move || {
         App::new()
+            .wrap(prometheus.clone())
             .wrap(Logger::default())
             .route("/login", web::post().to(login))
             .route("/users/add", web::post().to(add_user))
@@ -178,21 +189,24 @@ async fn main() -> std::io::Result<()> {
             .route("/friends", web::get().to(list_friends_rest))
             .route("/messages/post", web::post().to(send_message_rest))
             .route("/messages", web::get().to(list_messages_rest))
+            .service(web::resource("/health").to(health))
             .service(fs::Files::new("/", "./gui/dist"))
     })
     .bind("0.0.0.0:8080")?
-    // .workers(16)
-    .run();
-
-    let metrics_server = HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::default())
-            .route("/metrics", web::get().to(debug))
-    })
-    .bind("0.0.0.0:3000")?
-    .run();
-
-    future::try_join(main_server, metrics_server).await?;
+    .run()
+    .await?;
 
     Ok(())
+
+    // let metrics_server = HttpServer::new(move || {
+    //     App::new()
+    //         .wrap(prometheus.clone())
+    //         .service(web::resource("/health").to(health))
+    // })
+    // .bind("0.0.0.0:3000")?
+    // .run();
+    //
+    // future::try_join(main_server, metrics_server).await?;
+    //
+    // Ok(())
 }

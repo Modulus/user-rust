@@ -159,24 +159,24 @@ mod test {
         let user3 = result3.unwrap();
         let user4 = result4.unwrap();
 
-        add_fiend(&user1, &user2, &connection);
-        add_fiend(&user1, &user3, &connection);
-        add_fiend(&user1, &user4, &connection);
+        assert!(add_fiend(&user1, &user2, &connection).is_ok());
+        assert!(add_fiend(&user1, &user3, &connection).is_ok());
+        assert!(add_fiend(&user1, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user1, &connection).unwrap().len(), 3);
 
-        add_fiend(&user2, &user1, &connection);
-        add_fiend(&user2, &user3, &connection);
-        add_fiend(&user2, &user4, &connection);
+        assert!(add_fiend(&user2, &user1, &connection).is_ok());;
+        assert!(add_fiend(&user2, &user3, &connection).is_ok());;
+        assert!(add_fiend(&user2, &user4, &connection).is_ok());;
         assert_eq!(list_friends(&user2, &connection).unwrap().len(), 3);
 
-        add_fiend(&user3, &user1, &connection);
-        add_fiend(&user3, &user2, &connection);
-        add_fiend(&user3, &user4, &connection);
+        assert!(add_fiend(&user3, &user1, &connection).is_ok());;
+        assert!(add_fiend(&user3, &user2, &connection).is_ok());;
+        assert!(add_fiend(&user3, &user4, &connection).is_ok());;
         assert_eq!(list_friends(&user3, &connection).unwrap().len(), 3);
 
-        add_fiend(&user4, &user1, &connection);
-        add_fiend(&user4, &user2, &connection);
-        add_fiend(&user4, &user3, &connection);
+        assert!(add_fiend(&user4, &user1, &connection).is_ok());;
+        assert!(add_fiend(&user4, &user2, &connection).is_ok());;
+        assert!(add_fiend(&user4, &user3, &connection).is_ok());;
         assert_eq!(list_friends(&user4, &connection).unwrap().len(), 3);
 
         remove_friend(&user1, &user2, &connection);

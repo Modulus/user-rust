@@ -26,3 +26,8 @@ cargo run --bin show_users
 # To create hardcoded users
 cargo run --bin create_users
 cargo run --bin test_argon2
+
+# Dump db
+docker exec postgres pg_dumpall --user user < db/empty_db.sql
+
+docker container exec -i $(docker-compose ps -q postgres) psql user < db/empty_db.sql
