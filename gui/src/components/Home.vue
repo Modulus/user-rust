@@ -31,7 +31,8 @@ export default {
   data() {
     return {
       username: "",
-      password: ""
+      password: "",
+      newUser: {}
     }
   },
   props: {
@@ -42,14 +43,27 @@ export default {
       console.log(this.username)
       console.log(this.password)
       fetch("http://localhost:8080/users/add", {
-          headers: { "Content-Type": "application/json; charset=utf-8" },
+          headers: { "Content-Type": "application/json" },
           method: 'POST',
+          // redirect: "follow",
+          // cache: "no-cache",
+          // mode: "no-cors", //no-cors, same-origin
           body: JSON.stringify({
-            username: this.username,
+            name: this.username,
             password: this.password,
             active: true,
             comment: "New user"
           })
+        }).then(response => {
+          console.log(response)
+          return response.json()
+        })
+        .then(data => {
+          console.log("Data: ", data)
+          this.newUser = data
+        })
+        .catch((e) =>  {
+            console.log("Failed", e)
         })
     },
     login: function(){
