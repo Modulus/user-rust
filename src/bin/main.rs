@@ -33,16 +33,24 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
     let raw_user = get_user_by_name(&connection, &(user).name)?;
     let expected_hash = raw_user.pass_hash;
 
+    println!("Checking user!");
+
     return match argon2::verify_encoded(&expected_hash, user.password.as_bytes()) {
         Ok(valid) => match valid {
             true => {
                 let token = JwtToken::generate_token(&user);
+                println!("Password matched hash, returning JWT token!");
                 Ok(Json(token))
             }
-            false => Err(BackendError {
-                message: "Failed to login".to_string(),
-                backend_error_kind: BackendErrorKind::LoginError(String::from("Failed to login!")),
-            }),
+            false => {
+                println!("No matching user!");
+                Err(BackendError {
+                    message: "Failed to login".to_string(),
+                    backend_error_kind: BackendErrorKind::LoginError(String::from(
+                        "Failed to login!",
+                    )),
+                })
+            }
         },
         Err(error) => Err(BackendError {
             message: "Fatal error during login".to_string(),

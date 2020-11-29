@@ -28,11 +28,20 @@
 <script>
 export default {
   name: 'Home',
+  mounted(){
+    if (localStorage.jwtToken){
+      this.jwtToken = localStorage.jwtToken
+    }
+    if (localStorage.username){
+      this.username = localStorage.username
+    }
+  },
   data() {
     return {
       username: "",
       password: "",
-      newUser: {}
+      newUser: {},
+      loginData: {}
     }
   },
   props: {
@@ -67,7 +76,31 @@ export default {
         })
     },
     login: function(){
-      alert("Attembing to login!")
+      console.log(this.username)
+      console.log(this.password)
+      fetch("http://localhost:8080/login", {
+          headers: { "Content-Type": "application/json" },
+          method: 'POST',
+          // redirect: "follow",
+          // cache: "no-cache",
+          // mode: "no-cors", //no-cors, same-origin
+          body: JSON.stringify({
+            name: this.username,
+            password: this.password,
+          })
+        }).then(response => {
+          console.log(response)
+          return response.json()
+        })
+        .then(data => {
+          console.log("Data: ", data)
+          localStorage.username = this.username
+          localStorage.jwtToken = data
+          this.$router.push({name: "Wall"})
+        })
+        .catch((e) =>  {
+            console.log("Failed", e)
+        })
     }
 
   }

@@ -30,7 +30,7 @@ cargo run --bin test_argon2
 # Dump db
 docker exec postgres pg_dumpall --user user < db/empty_db.sql
 
-docker container exec -i $(docker-compose ps -q postgres) psql user < db/empty_db.sql
+docker container exec -i $(docker-compose ps -q postgres) psql --user user < db/empty_db.sql
 
 # Connection string
 export DATABASE_URL=postgres://user:user@localhost/user
