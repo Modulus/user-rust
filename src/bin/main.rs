@@ -3,7 +3,13 @@ use actix_files as fs;
 use actix_web::http::header;
 use actix_web::web::Json;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
+use actix_web_httpauth::extractors::basic::{BasicAuth, Config};
+use actix_web_httpauth::extractors::AuthenticationError;
 use actix_web_prom::PrometheusMetrics;
+use env_logger::Env;
+
+use log::{error, info};
+
 use futures::future;
 use std::borrow::Borrow;
 use std::collections::HashMap;
@@ -16,6 +22,7 @@ use user_rust::db::models::{
 use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
 
+// TODO: https://turreta.com/2020/06/07/actix-web-basic-and-bearer-authentication-examples/
 //TODO: Add jwt verification to all call
 // #[get("/")]
 // async fn debug() -> impl Responder {
@@ -23,8 +30,27 @@ use user_rust::errors::{BackendError, BackendErrorKind};
 //     format!("Hello wøøøøørking!!! {:?}", "Svada")
 // }
 
+// async fn bearer_auth_validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
+//     let config = req
+//         .app_data::<Config>()
+//         .map(|data| data.get_ref().clone())
+//         .unwrap_or_else(Default::default);
+//     match validate_token(credentials.token()) {
+//         Ok(res) => {
+//             if res == true {
+//                 Ok(req)
+//             } else {
+//                 Err(AuthenticationError::from(config).into())
+//             }
+//         }
+//         Err(_) => Err(AuthenticationError::from(config).into()),
+//     }
+// }
+
 #[get("/{id}/{name}/index.html")]
 async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responder {
+    println!("HOIHOI!");
+    error!("JADDDA!!!!");
     format!("Hello {}! id:{}", name, id)
 }
 
@@ -179,17 +205,22 @@ fn health() -> HttpResponse {
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    println!("Serving api on 0.0.0.0:8080");
+    println!("Serving api on 0.0.0.0:8888");
 
     // println!("Serving metrics on 0.0.0.0:3000");
-    std::env::set_var("RUST_LOG", "my_errors=debug,actix_web=info");
+    std::env::set_var("RUST_LOG", "info");
     std::env::set_var("RUST_BACKTRACE", "full");
+    env_logger::init();
+    //env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
+
     let mut labels = HashMap::new();
     labels.insert("app".to_string(), "rust-user".to_string());
     let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
     // env_logger::init();
     // let main_server = HttpServer::new(move || {
+
     HttpServer::new(move || {
+        // let auth = HttpAuthentication::basic(basic_auth_validator);
         App::new()
             // .wrap(
             //     Cors::default().allowed_origin("*"), // .allowed_methods(vec!["GET", "POST"])
@@ -197,9 +228,11 @@ async fn main() -> std::io::Result<()> {
             //                                          // .allowed_header(header::CONTENT_TYPE)
             //                                          // .max_age(3600)
             // )
+            // .wrap(auth)
             .wrap(Cors::permissive())
             .wrap(prometheus.clone())
             .wrap(Logger::default())
+            .wrap(Logger::new("%a %{User-Agent}i"))
             .route("/login", web::post().to(login))
             .route("/users/add", web::post().to(add_user))
             .route("/users", web::get().to(get_users))
@@ -210,7 +243,7 @@ async fn main() -> std::io::Result<()> {
             .service(web::resource("/health").to(health))
             .service(fs::Files::new("/", "./gui/dist"))
     })
-    .bind("0.0.0.0:8080")?
+    .bind("0.0.0.0:8888")?
     .run()
     .await?;
 

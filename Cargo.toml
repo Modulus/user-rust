@@ -24,6 +24,7 @@ futures = "0.3.7"
 #prometheus = "0.10.0"
 actix-web-prom = "0.5"
 #Logging
-env_logger = "0.7.1"
-log = { version = "0.4.8", features = ["max_level_debug", "release_max_level_debug"] }
+env_logger = "0.8.2"
+log = { version = "0.4.8"}
+actix-web-httpauth = "0.5.0"
 

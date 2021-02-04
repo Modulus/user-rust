@@ -1,6 +1,6 @@
 use actix_web::http::{header, StatusCode};
 use actix_web::{HttpResponse, ResponseError};
-use serde::export::Formatter;
+use serde::__private::Formatter;
 use serde_derive::*;
 use std::fmt;
 
