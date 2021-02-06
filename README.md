@@ -11,6 +11,8 @@ rust diesel and actix web app with vue 3 front for showing how user registration
 3. Login in actix
 4. vue frontend
 
+5. Jwt tokens: https://docs.rs/jsonwebtoken/7.2.0/jsonwebtoken/
+
 # Create containers
 docker-compose up -d
 

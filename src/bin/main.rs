@@ -1,23 +1,18 @@
 use actix_cors::Cors;
 use actix_files as fs;
-use actix_web::http::header;
 use actix_web::web::Json;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
-use actix_web_httpauth::extractors::basic::{BasicAuth, Config};
-use actix_web_httpauth::extractors::AuthenticationError;
 use actix_web_prom::PrometheusMetrics;
 use env_logger::Env;
 
-use log::{error, info};
+use log::{info, warn};
 
-use futures::future;
-use std::borrow::Borrow;
 use std::collections::HashMap;
-use user_rust::db::friends::{add_fiend, list_friends, list_friends_by_id};
+use user_rust::db::friends::{add_fiend, list_friends_by_id};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
-    FriendJson, JwtToken, Message, NewMessage, NewUserJson, User, UserJson, UserLogin,
+    FriendJson, JwtToken, Message, NewMessage, NewUserJson, UserJson, UserLogin,
 };
 use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
@@ -49,8 +44,6 @@ use user_rust::errors::{BackendError, BackendErrorKind};
 
 #[get("/{id}/{name}/index.html")]
 async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responder {
-    println!("HOIHOI!");
-    error!("JADDDA!!!!");
     format!("Hello {}! id:{}", name, id)
 }
 
@@ -59,17 +52,17 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
     let raw_user = get_user_by_name(&connection, &(user).name)?;
     let expected_hash = raw_user.pass_hash;
 
-    println!("Checking user!");
+    info!("Checking user!");
 
     return match argon2::verify_encoded(&expected_hash, user.password.as_bytes()) {
         Ok(valid) => match valid {
             true => {
                 let token = JwtToken::generate_token(&user);
-                println!("Password matched hash, returning JWT token!");
+                info!("Password matched hash, returning JWT token!");
                 Ok(Json(token))
             }
             false => {
-                println!("No matching user!");
+                warn!("No matching user!");
                 Err(BackendError {
                     message: "Failed to login".to_string(),
                     backend_error_kind: BackendErrorKind::LoginError(String::from(
@@ -79,14 +72,14 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
             }
         },
         Err(error) => Err(BackendError {
-            message: "Fatal error during login".to_string(),
+            message: format!("Fatal error during login, {:?}", error),
             backend_error_kind: BackendErrorKind::FatalError(String::from("Failed to login!")),
         }),
     };
 }
 
 async fn add_user(new_user: Json<NewUserJson>) -> Result<Json<UserJson>, BackendError> {
-    println!("Inserting new user");
+    info!("Inserting new user");
 
     let connection = establish_connection();
     let response = create_user_raw(
@@ -137,7 +130,7 @@ async fn list_friends_rest(user: Json<UserJson>) -> Result<Json<Vec<UserJson>>, 
 }
 
 pub async fn get_users() -> Result<Json<Vec<UserJson>>, BackendError> {
-    println!("Listing all users");
+    info!("Listing all users");
     let connection = establish_connection();
 
     //TODO: MAKE get_all_users use ?
@@ -183,6 +176,8 @@ pub async fn send_message_rest(message: Json<NewMessage>) -> Result<Json<String>
         &connection,
     )?;
 
+    println!("{:?}", result);
+
     return Ok(Json("Sent".to_ascii_lowercase()));
 }
 
@@ -210,17 +205,19 @@ async fn main() -> std::io::Result<()> {
     // println!("Serving metrics on 0.0.0.0:3000");
     std::env::set_var("RUST_LOG", "info");
     std::env::set_var("RUST_BACKTRACE", "full");
-    env_logger::init();
-    //env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
+    // env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
 
-    let mut labels = HashMap::new();
-    labels.insert("app".to_string(), "rust-user".to_string());
-    let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
+
     // env_logger::init();
     // let main_server = HttpServer::new(move || {
 
     HttpServer::new(move || {
         // let auth = HttpAuthentication::basic(basic_auth_validator);
+        let mut labels = HashMap::new();
+        labels.insert("app".to_string(), "rust-user".to_string());        
+        let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
+
         App::new()
             // .wrap(
             //     Cors::default().allowed_origin("*"), // .allowed_methods(vec!["GET", "POST"])
@@ -230,7 +227,7 @@ async fn main() -> std::io::Result<()> {
             // )
             // .wrap(auth)
             .wrap(Cors::permissive())
-            .wrap(prometheus.clone())
+            .wrap(prometheus)
             .wrap(Logger::default())
             .wrap(Logger::new("%a %{User-Agent}i"))
             .route("/login", web::post().to(login))

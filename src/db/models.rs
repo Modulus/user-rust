@@ -6,8 +6,8 @@ use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
 use jsonwebtoken::{EncodingKey, Header};
 
-#[macro_use]
-use diesel::prelude::*;
+// #[macro_use]
+// use diesel::prelude::*;
 
 #[table_name = "users"]
 #[derive(Insertable, Debug, Serialize, Queryable, Clone, PartialEq, Eq)]
@@ -20,14 +20,6 @@ pub struct User {
     pub created: NaiveDateTime,
 }
 
-// #[table_name = "users"]
-// #[derive(Debug, Serialize, Queryable, Clone, PartialEq, Eq)]
-// pub struct UserSafe {
-//     pub id: i32,
-//     pub name: String,
-//     pub comment: Option<String>,
-//     pub created: NaiveDateTime,
-// }
 
 #[derive(Insertable, Debug, Serialize)]
 #[table_name = "users"]
@@ -138,4 +130,5 @@ impl JwtToken {
         )
         .unwrap()
     }
+
 }

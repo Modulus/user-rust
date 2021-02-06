@@ -12,9 +12,12 @@ fn main(){
     let user2 = users.get(1).unwrap();
 
 
-    send_message(user1, user2, "Hello".to_string(),
+    let result1 = send_message(user1, user2, "Hello".to_string(),
                  "First message ever!!! Let's be fiwends".to_string(), &connection);
+                
+    println!("Result: {:?}", result1);
 
-    send_message(user2, user1, "Hello back at ya!".to_string(), "Aesome stuffs".to_string(), &connection);
+    let result2 = send_message(user2, user1, "Hello back at ya!".to_string(), "Aesome stuffs".to_string(), &connection);
 
+    println!("Result: {:?}", result2);
 }
