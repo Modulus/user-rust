@@ -4,8 +4,9 @@ use crate::schema::users;
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
-use jsonwebtoken::{EncodingKey, Header};
-
+use jsonwebtoken::errors::ErrorKind;
+use jsonwebtoken::{EncodingKey, Header, Validation, DecodingKey};
+use log::{error};
 // #[macro_use]
 // use diesel::prelude::*;
 
@@ -102,33 +103,112 @@ pub struct UserLogin {
 static ONE_WEEK: i64 = 60 * 60 * 24 * 7; // in seconds
 
 #[derive(Serialize, Deserialize)]
-pub struct JwtToken {
+pub struct Claims {
     //issued at
     pub iat: i64,
     //expiration
     pub exp: i64,
     //data
-    pub user: String,
+    pub name: String,
     // pub login_session: String,
 }
 
-impl JwtToken {
+#[derive(Serialize, Deserialize)]
+pub struct TokenHelper {
+
+}
+
+impl TokenHelper {
     pub fn generate_token(login: &UserLogin) -> String {
         let now = Utc::now().timestamp_nanos() / 1_000_000_000; // nanosecond -> second
-        let payload = JwtToken {
+        let payload = Claims {
             iat: now,
             exp: now + ONE_WEEK,
-            user: login.name.clone(),
-            // login_session: login.login_session.clone(),
+            name: login.name.clone(),
         };
 
         jsonwebtoken::encode(
             &Header::default(),
             &payload,
             &EncodingKey::from_secret("Secret which should be in rilfe".as_ref()),
-            // &EncodingKey::from_secret(&KEY),
         )
         .unwrap()
+
     }
+
+    pub fn validate_token(token: &String) -> bool {
+        match jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()) {
+            Ok(_c) => true,
+            Err(err) => match *err.kind() {
+                ErrorKind::InvalidToken => {
+                    error!("Token is invalid");
+                    false
+                }, // Example on how to handle a specific error
+                ErrorKind::InvalidIssuer => {
+                    error!("Issuer is invalid");
+                    false
+                }, // Example on how to handle a specific error
+                _ => {
+                    error!("Some other errors"); 
+                    false
+                }
+            }
+        }
+    }
+
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::db::lib::establish_connection;
+    use crate::db::models::NewUserJson;
+    use crate::db::models::{TokenHelper, UserLogin};
+    
+
+    #[test]
+    fn test_validate_has_valid_token_is_valid() {
+
+        let user_login = UserLogin{
+            name: String::from("User"),
+            password: String::from("Pass")
+        };
+
+        let token = TokenHelper::generate_token(&user_login);
+
+        assert!(token.len() > 0);
+        println!("{}", token);
+
+
+        assert!(TokenHelper::validate_token(&token))
+    }
+
+    #[test]
+    fn test_valid_has_altered_valid_token_is_invalid(){
+        let user_login = UserLogin{
+            name: String::from("User"),
+            password: String::from("Pass")
+        };
+
+        let token = TokenHelper::generate_token(&user_login);
+
+        assert!(token.len() > 0);
+
+        let mut new_token = "".to_owned();
+        new_token.push_str(&token);
+        new_token.push_str("asdf");
+
+        assert!(TokenHelper::validate_token(&new_token) == false);
+
+
+    }
+
+    #[test]
+    fn test_valid_has_gibberish_token_is_invalid(){
+
+        let token = String::from("Dette er bare drit!");
+        assert!(TokenHelper::validate_token(&token) == false);
+    }
+
 
 }

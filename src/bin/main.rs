@@ -12,7 +12,7 @@ use user_rust::db::friends::{add_fiend, list_friends_by_id};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
-    FriendJson, JwtToken, Message, NewMessage, NewUserJson, UserJson, UserLogin,
+    FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserJson, UserLogin,
 };
 use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
@@ -57,7 +57,7 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
     return match argon2::verify_encoded(&expected_hash, user.password.as_bytes()) {
         Ok(valid) => match valid {
             true => {
-                let token = JwtToken::generate_token(&user);
+                let token = TokenHelper::generate_token(&user);
                 info!("Password matched hash, returning JWT token!");
                 Ok(Json(token))
             }
@@ -207,6 +207,8 @@ async fn main() -> std::io::Result<()> {
     std::env::set_var("RUST_BACKTRACE", "full");
     // env_logger::init();
     env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
+
+    // let UserRepository = UserRepository::new()
 
 
     // env_logger::init();

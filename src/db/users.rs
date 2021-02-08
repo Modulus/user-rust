@@ -4,8 +4,20 @@ use crate::db::models::{NewUser, NewUserJson, User};
 use crate::errors::BackendError;
 use argon2::{self, Config};
 use diesel::prelude::*;
+// use diesel::r2d2::{ Pool, PooledConnection, ConnectionManager, PoolError };
 use rand::distributions::Alphanumeric;
 use rand::Rng;
+
+
+// pub struct UserRepository {
+//     pub pool Pool
+// }
+
+// impl UserRepository {
+//     pub fn new(pool: Pool){
+        
+//     }
+// }
 
 pub fn create_user(conn: &PgConnection, user: &NewUserJson) -> Result<User, BackendError> {
     use crate::schema::users;
