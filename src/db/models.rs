@@ -17,6 +17,7 @@ pub struct User {
     pub name: String,
     pub comment: Option<String>,
     pub active: bool,
+    #[serde(skip_serializing)]
     pub pass_hash: String, //Needs to be option to be excluded inn some read calls
     pub created: NaiveDateTime,
 }
@@ -28,6 +29,7 @@ pub struct NewUser<'a> {
     pub name: &'a str,
     pub comment: &'a str,
     pub active: bool,
+    #[serde(skip_serializing)]
     pub pass_hash: &'a str, // Used for the password string, needs same name to be serializable
     pub created: NaiveDateTime,
 }
