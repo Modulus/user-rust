@@ -231,14 +231,14 @@ pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError> {
         .load::<User>(conn)?)
 }
 
-// pub fn get_all_users_safe(conn: &PgConnection) -> Result<Vec<UserSafe>, BackendError> {
-//     use crate::schema::users::dsl::*;
-//     Ok(users
-//         .filter(active.eq(true))
-//         .select((id, name, comment, created))
-//         .limit(25)
-//         .load::<UserSafe>(conn)?)
-// }
+// // pub fn get_all_users_safe(conn: &PgConnection) -> Result<Vec<UserSafe>, BackendError> {
+// //     use crate::schema::users::dsl::*;
+// //     Ok(users
+// //         .filter(active.eq(true))
+// //         .select((id, name, comment, created))
+// //         .limit(25)
+// //         .load::<UserSafe>(conn)?)
+// // }
 
 #[cfg(test)]
 mod tests {
@@ -278,29 +278,29 @@ mod tests {
 
     }
 
-    #[test]
-    fn it_create_user_works() {
-        let conn = establish_connection();
-        let new_user = NewUserJson {
-            name: "test-user1".to_string(),
-            comment: "User created from intagration test".to_string(),
-            active: true,
-            password: "supersecret".to_string(),
-        };
-        let result = create_user(&conn, &new_user);
+    // #[test]
+    // fn it_create_user_works() {
+    //     let conn = establish_connection();
+    //     let new_user = NewUserJson {
+    //         name: "test-user1".to_string(),
+    //         comment: "User created from intagration test".to_string(),
+    //         active: true,
+    //         password: "supersecret".to_string(),
+    //     };
+    //     let result = create_user(&conn, &new_user);
 
-        assert!(result.is_ok());
-        let user = result.unwrap();
+    //     assert!(result.is_ok());
+    //     let user = result.unwrap();
 
-        let user_by_name = get_user_by_name(&conn, &new_user.name).unwrap();
+    //     let user_by_name = get_user_by_name(&conn, &new_user.name).unwrap();
 
-        let user_by_id = get_user_by_id(&conn, user_by_name.id).unwrap();
-        assert_eq!(&user, &user_by_name);
-        assert_eq!(&user_by_name, &user_by_id);
+    //     let user_by_id = get_user_by_id(&conn, user_by_name.id).unwrap();
+    //     assert_eq!(&user, &user_by_name);
+    //     assert_eq!(&user_by_name, &user_by_id);
 
-        delete_user_by_name(&conn, &new_user.name);
+    //     delete_user_by_name(&conn, &new_user.name);
 
-        let existing_user = get_user_by_name(&conn, &new_user.name);
-        assert!(existing_user.is_err());
-    }
+    //     let existing_user = get_user_by_name(&conn, &new_user.name);
+    //     assert!(existing_user.is_err());
+    // }
 }

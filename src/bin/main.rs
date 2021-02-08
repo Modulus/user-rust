@@ -65,15 +65,13 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
                 warn!("No matching user!");
                 Err(BackendError {
                     message: "Failed to login".to_string(),
-                    backend_error_kind: BackendErrorKind::LoginError(String::from(
-                        "Failed to login!",
-                    )),
+                    backend_error_kind: BackendErrorKind::LoginError
                 })
             }
         },
         Err(error) => Err(BackendError {
             message: format!("Fatal error during login, {:?}", error),
-            backend_error_kind: BackendErrorKind::FatalError(String::from("Failed to login!")),
+            backend_error_kind: BackendErrorKind::FatalError,
         }),
     };
 }
@@ -208,7 +206,12 @@ async fn main() -> std::io::Result<()> {
     // env_logger::init();
     env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
 
-    // let UserRepository = UserRepository::new()
+    // let manager = ConnectionManager::<PgConnection>::new(DATABASE_URL);
+    // let pool = Pool::builder().build(manager).expect("Failed to create pool");
+    // let repo = UserRepository{
+    //     pool: pool
+    // };
+
 
 
     // env_logger::init();

@@ -7,10 +7,10 @@ use std::fmt;
 
 #[derive(Eq, Debug, PartialEq, Serialize)]
 pub enum BackendErrorKind {
-    DieselError(String),
-    FatalError(String),
-    HashError(String),
-    LoginError(String),
+    DieselError,
+    FatalError,
+    HashError,
+    LoginError,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -27,7 +27,7 @@ pub struct LoginError {
 
 impl From<diesel::result::Error> for BackendErrorKind {
     fn from(e: diesel::result::Error) -> Self {
-        BackendErrorKind::DieselError(e.to_string())
+        BackendErrorKind::DieselError
     }
 }
 
@@ -35,7 +35,7 @@ impl From<diesel::result::Error> for BackendError {
     fn from(e: diesel::result::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::DieselError(e.to_string()),
+            backend_error_kind: BackendErrorKind::DieselError,
         }
     }
 }
@@ -44,7 +44,7 @@ impl From<argon2::Error> for BackendError {
     fn from(e: argon2::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::HashError(e.to_string()),
+            backend_error_kind: BackendErrorKind::HashError,
         }
     }
 }
@@ -53,7 +53,7 @@ impl From <r2d2::Error> for BackendError {
     fn from(e: r2d2::Error) -> Self {
         BackendError {
             message: "failed".to_string(),
-            backend_error_kind: BackendErrorKind::DieselError("fatal".to_string()),
+            backend_error_kind: BackendErrorKind::DieselError,
         }
     }
 }
@@ -61,12 +61,12 @@ impl From <r2d2::Error> for BackendError {
 impl fmt::Display for BackendErrorKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            BackendErrorKind::DieselError(ref msg) => write!(f, "Failed with message={:?}", msg),
-            BackendErrorKind::FatalError(ref msg) => {
-                write!(f, "Failed with fatal error... {:?}", msg)
+            BackendErrorKind::DieselError => write!(f, "DiselError"),
+            BackendErrorKind::FatalError => {
+                write!(f, "Failed with fatal error...")
             }
-            BackendErrorKind::HashError(ref msg) => write!(f, "Failed to hash string: {:?}", msg),
-            BackendErrorKind::LoginError(ref msg) => write!(f, "Failed to login: {:?}", msg),
+            BackendErrorKind::HashError => write!(f, "Failed to hash string"),
+            BackendErrorKind::LoginError => write!(f, "Failed to login"),
         }
     }
 }
@@ -97,10 +97,10 @@ impl fmt::Display for BackendError {
 impl ResponseError for BackendError {
     fn status_code(&self) -> StatusCode {
         match self.backend_error_kind {
-            BackendErrorKind::DieselError(ref _error) => StatusCode::INTERNAL_SERVER_ERROR,
-            BackendErrorKind::FatalError(ref _error) => StatusCode::INTERNAL_SERVER_ERROR,
-            BackendErrorKind::HashError(ref _msg) => StatusCode::METHOD_NOT_ALLOWED,
-            BackendErrorKind::LoginError(ref _msg) => StatusCode::UNAUTHORIZED,
+            BackendErrorKind::DieselError => StatusCode::INTERNAL_SERVER_ERROR,
+            BackendErrorKind::FatalError => StatusCode::INTERNAL_SERVER_ERROR,
+            BackendErrorKind::HashError => StatusCode::METHOD_NOT_ALLOWED,
+            BackendErrorKind::LoginError => StatusCode::UNAUTHORIZED,
             // _ => StatusCode::IM_A_TEAPOT,
         }
     }
