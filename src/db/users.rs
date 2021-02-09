@@ -254,7 +254,7 @@ mod tests {
         let manager = ConnectionManager::<PgConnection>::new(DATABASE_URL);
         let pool = Pool::builder().build(manager).expect("Failed to create pool");
         let repo = UserRepository{
-            pool: pool
+            pool: &pool
         };
 
         let new_user = NewUserJson {
