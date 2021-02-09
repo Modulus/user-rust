@@ -140,21 +140,14 @@ impl TokenHelper {
     }
 
     pub fn extract_token_from_header_value(header_value: &str) -> Option<String> {
-        if header_value.contains("Bearer"){
-            match header_value.split_whitespace().last() {
-                Some(value) => {
-                    return Some(String::from(value).replace("\"", ""));
-                }
-                None => {
-                    return None;
-                }
+        match header_value.split_whitespace().last() {
+            Some(value) => {
+                return Some(String::from(value).replace("\"", ""));
             }
-
-
-            
+            None => {
+                return None;
+            }
         }
-        Some(String::from(header_value).replace("\"", ""))
-        
     }
 
     pub fn validate_token(token: &String) -> bool {
