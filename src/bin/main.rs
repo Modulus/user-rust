@@ -1,6 +1,7 @@
 use actix_cors::Cors;
 use actix_files as fs;
-use actix_web::web::Json;
+use actix_http::HttpMessage;
+use actix_web::{HttpRequest, web::Json};
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
 use actix_web_prom::PrometheusMetrics;
 use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
@@ -129,9 +130,13 @@ async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnec
     return Ok(Json(json_friends));
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>) -> Result<Json<Vec<UserJson>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, request: HttpRequest) -> Result<Json<Vec<UserJson>>, BackendError> {
     info!("Listing all users");
+    info!("{:#?}", request);
     let connection = pool.get().unwrap(); //TODO: Add better error handling
+
+    let token = request.headers().get("authorization").unwrap();
+    info!("Found token: {:#?}", token);
 
     //TODO: MAKE get_all_users use ?
     match get_all_users(&connection) {

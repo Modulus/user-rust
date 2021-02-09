@@ -1,6 +1,7 @@
 use crate::schema::friends;
 use crate::schema::messages;
 use crate::schema::users;
+use actix_http::{header, http::header};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
@@ -138,6 +139,24 @@ impl TokenHelper {
 
     }
 
+    pub fn extract_token_from_header_value(header_value: &str) -> Option<String> {
+        if header_value.contains("Bearer"){
+            match header_value.split_whitespace().last() {
+                Some(value) => {
+                    return Some(String::from(value).replace("\"", ""));
+                }
+                None => {
+                    return None;
+                }
+            }
+
+
+            
+        }
+        Some(String::from(header_value).replace("\"", ""))
+        
+    }
+
     pub fn validate_token(token: &String) -> bool {
         match jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()) {
             Ok(_c) => true,
@@ -220,6 +239,34 @@ mod tests {
 
         let token = String::from("Dette er bare drit!");
         assert!(TokenHelper::validate_token(&token) == false);
+    }
+
+    #[test]
+    fn test_extract_token_from_header_value_has_expected_format_returns_expected_string(){
+        let authorization ="Bearer \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk\"";
+
+        let result = TokenHelper::extract_token_from_header_value(authorization);
+
+        assert_eq!(String::from(result.unwrap()), String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk"))
+    }
+
+    #[test]
+    fn test_extract_token_from_header_has_just_token_returns_same_token(){
+        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk";
+
+        let result = TokenHelper::extract_token_from_header_value(token);
+
+        assert_eq!(result.unwrap(), String::from(token));
+    }
+
+
+    #[test]
+    fn test_extract_token_from_header_value_has_quotes_returns_string_without_quotes(){
+        let token = "\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk\"";
+
+        let result = TokenHelper::extract_token_from_header_value(token);
+
+        assert_eq!(result.unwrap(), String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk"));
     }
 
 
