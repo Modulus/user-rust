@@ -163,10 +163,20 @@ impl TokenHelper {
 
 #[cfg(test)]
 mod tests {
+    use jsonwebtoken::TokenData;
+
     use crate::db::lib::establish_connection;
     use crate::db::models::NewUserJson;
     use crate::db::models::{TokenHelper, UserLogin};
     
+    #[test]
+    fn test_validate_has_changed_valid_token_is_valid_is_false(){
+        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI4NTUwMzksImV4cCI6MTYxMzQ1OTgzOSwibmFtZSI6ImpvaG4ifQ.Uy6BBphzY7GjclDM68nFKhUJfBoYGutdkXMoWZKQBug";
+        let modified = String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI4NTUwMzksImV4cCI6MTYxMzQ1OTgzOSwibmFtZSI6ImpvaG4ifQ.Uy6BBphzY7GjclDM68nFKhUJfBoYGutdkXMoWZKQBUG");
+
+        assert!(TokenHelper::validate_token(&modified) == false);
+    }
+
 
     #[test]
     fn test_validate_has_valid_token_is_valid() {

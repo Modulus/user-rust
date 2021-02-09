@@ -3,11 +3,12 @@ use actix_files as fs;
 use actix_web::web::Json;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
 use actix_web_prom::PrometheusMetrics;
+use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
 use env_logger::Env;
-
+use dotenv::dotenv;
 use log::{info, warn};
 
-use std::collections::HashMap;
+use std::{collections::HashMap, env};
 use user_rust::db::friends::{add_fiend, list_friends_by_id};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
@@ -16,6 +17,7 @@ use user_rust::db::models::{
 };
 use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
+
 
 // TODO: https://turreta.com/2020/06/07/actix-web-basic-and-bearer-authentication-examples/
 //TODO: Add jwt verification to all call
@@ -47,8 +49,8 @@ async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responde
     format!("Hello {}! id:{}", name, id)
 }
 
-async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
-    let connection = establish_connection();
+async fn login(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
+    let connection = pool.get().unwrap(); //TODO: Fix error handling
     let raw_user = get_user_by_name(&connection, &(user).name)?;
     let expected_hash = raw_user.pass_hash;
 
@@ -76,10 +78,10 @@ async fn login(user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
     };
 }
 
-async fn add_user(new_user: Json<NewUserJson>) -> Result<Json<UserJson>, BackendError> {
+async fn add_user(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, new_user: Json<NewUserJson>) -> Result<Json<UserJson>, BackendError> {
     info!("Inserting new user");
 
-    let connection = establish_connection();
+    let connection = pool.get().unwrap(); //TODO: Add better error handling
     let response = create_user_raw(
         &connection,
         &new_user.name,
@@ -99,8 +101,8 @@ async fn add_user(new_user: Json<NewUserJson>) -> Result<Json<UserJson>, Backend
     Ok(Json(json_user))
 }
 
-async fn add_friend_rest(friends: Json<FriendJson>) -> Result<Json<usize>, BackendError> {
-    let connection = establish_connection();
+async fn add_friend_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, friends: Json<FriendJson>) -> Result<Json<usize>, BackendError> {
+    let connection = pool.get().unwrap(); //TODO: Add better error handling
     let user = get_user_by_id(&connection, friends.user_id)?;
     let friend_to_add = get_user_by_id(&connection, friends.friend_id)?;
 
@@ -109,8 +111,8 @@ async fn add_friend_rest(friends: Json<FriendJson>) -> Result<Json<usize>, Backe
     return Ok(Json(result));
 }
 
-async fn list_friends_rest(user: Json<UserJson>) -> Result<Json<Vec<UserJson>>, BackendError> {
-    let connection = establish_connection();
+async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserJson>) -> Result<Json<Vec<UserJson>>, BackendError> {
+    let connection = pool.get().unwrap(); //TODO: ADD better error handling
     let friends = list_friends_by_id(user.id, &connection)?;
 
     let json_friends: Vec<UserJson> = friends
@@ -127,9 +129,9 @@ async fn list_friends_rest(user: Json<UserJson>) -> Result<Json<Vec<UserJson>>, 
     return Ok(Json(json_friends));
 }
 
-pub async fn get_users() -> Result<Json<Vec<UserJson>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>) -> Result<Json<Vec<UserJson>>, BackendError> {
     info!("Listing all users");
-    let connection = establish_connection();
+    let connection = pool.get().unwrap(); //TODO: Add better error handling
 
     //TODO: MAKE get_all_users use ?
     match get_all_users(&connection) {
@@ -159,8 +161,8 @@ pub async fn delete_user_rest() -> impl Responder {
     format!("hello from delete user")
 }
 
-pub async fn send_message_rest(message: Json<NewMessage>) -> Result<Json<String>, BackendError> {
-    let connection = establish_connection();
+pub async fn send_message_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, message: Json<NewMessage>) -> Result<Json<String>, BackendError> {
+    let connection = pool.get().unwrap(); //TODO: Add better error handling
 
     let sender = get_user_by_id(&connection, message.sender_user_id)?;
 
@@ -180,8 +182,8 @@ pub async fn send_message_rest(message: Json<NewMessage>) -> Result<Json<String>
 }
 
 //TODO: Create a messageJson type with updated user info and stripped away sender info
-pub async fn list_messages_rest(user: Json<UserJson>) -> Result<Json<Vec<Message>>> {
-    let connection = establish_connection();
+pub async fn list_messages_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserJson>) -> Result<Json<Vec<Message>>> {
+    let connection = pool.get().unwrap(); //TODO: Add better error handling
 
     let user = get_user_by_id(&connection, user.id)?;
 
@@ -206,13 +208,19 @@ async fn main() -> std::io::Result<()> {
     // env_logger::init();
     env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
 
-    // let manager = ConnectionManager::<PgConnection>::new(DATABASE_URL);
-    // let pool = Pool::builder().build(manager).expect("Failed to create pool");
+
     // let repo = UserRepository{
     //     pool: pool
     // };
-
-
+    // let manager = ConnectionManager::<PgConnection>::new("");
+    // let pool = Pool::builder().build(manager).expect("Failed to create pool");
+    // HttpServer::new(move || {
+    //     App::new(pool.clone())
+    //         .resource("/", web::get().to(login))
+    // })
+    // .bind("127.0.0.1:8080")?
+    // .run()
+    // .await;
 
     // env_logger::init();
     // let main_server = HttpServer::new(move || {
@@ -222,15 +230,22 @@ async fn main() -> std::io::Result<()> {
         let mut labels = HashMap::new();
         labels.insert("app".to_string(), "rust-user".to_string());        
         let prometheus = PrometheusMetrics::new("api", Some("/metrics"), Some(labels));
+        //Find a way to trigger this in a good way
+        dotenv().ok();
+        let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        let pool = Pool::builder().max_size(1).build(manager).expect("Failed to create pool");
 
-        App::new()
-            // .wrap(
+             // .wrap(
             //     Cors::default().allowed_origin("*"), // .allowed_methods(vec!["GET", "POST"])
             //                                          // .allowed_headers(vec![header::AUTHORIZATION, header::ACCEPT])
             //                                          // .allowed_header(header::CONTENT_TYPE)
             //                                          // .max_age(3600)
             // )
             // .wrap(auth)
+
+        App::new().data(pool)
             .wrap(Cors::permissive())
             .wrap(prometheus)
             .wrap(Logger::default())

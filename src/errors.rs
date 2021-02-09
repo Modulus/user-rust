@@ -1,6 +1,6 @@
 use actix_web::http::{header, StatusCode};
 use actix_web::{HttpResponse, ResponseError};
-use diesel::r2d2;
+use diesel::{r2d2::Error};
 use serde::__private::Formatter;
 use serde_derive::*;
 use std::fmt;
@@ -44,15 +44,15 @@ impl From<argon2::Error> for BackendError {
     fn from(e: argon2::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::HashError,
+            backend_error_kind: BackendErrorKind::DieselError,
         }
     }
 }
 
-impl From <r2d2::Error> for BackendError {
-    fn from(e: r2d2::Error) -> Self {
+impl From <diesel::r2d2::Error> for BackendError {
+    fn from(e: diesel::r2d2::Error) -> Self {
         BackendError {
-            message: "failed".to_string(),
+            message: e.to_string(),
             backend_error_kind: BackendErrorKind::DieselError,
         }
     }

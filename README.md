@@ -36,3 +36,5 @@ docker container exec -i $(docker-compose ps -q postgres) psql --user user < db/
 
 # Connection string
 export DATABASE_URL=postgres://user:user@localhost/user
+
+TODO: https://actix.rs/docs/databases/
