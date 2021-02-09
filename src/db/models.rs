@@ -12,14 +12,16 @@ use log::{error};
 // use diesel::prelude::*;
 
 #[table_name = "users"]
-#[derive(Insertable, Debug, Serialize, Queryable, Clone, PartialEq, Eq)]
+#[derive(Insertable, Debug, Serialize, Queryable, Clone, PartialEq, Eq, Deserialize)]
 pub struct User {
     pub id: i32,
     pub name: String,
     pub comment: Option<String>,
+    #[serde(skip_serializing)]
     pub active: bool,
     #[serde(skip_serializing)]
     pub pass_hash: String, //Needs to be option to be excluded inn some read calls
+    #[serde(skip_serializing)]
     pub created: NaiveDateTime,
 }
 
@@ -32,6 +34,7 @@ pub struct NewUser<'a> {
     pub active: bool,
     #[serde(skip_serializing)]
     pub pass_hash: &'a str, // Used for the password string, needs same name to be serializable
+    #[serde(skip_serializing)]
     pub created: NaiveDateTime,
 }
 
@@ -72,16 +75,17 @@ pub struct NewMessage {
     pub modified: Option<NaiveDateTime>,
 }
 
-// Model for frontend
-#[derive(Debug, Serialize, Deserialize)]
-pub struct UserJson {
-    pub id: i32,
-    pub name: String,
-    pub comment: Option<String>,
-    pub active: bool,
-    pub password: String,
-    // pub create: chrono::NaiveDateTime,
-}
+// // Model for frontend
+// #[derive(Debug, Serialize, Deserialize)]
+// pub struct UserJson {
+//     pub id: i32,
+//     pub name: String,
+//     pub comment: Option<String>,
+//     pub active: bool,
+//     #[serde(skip_serializing)]    
+//     pub password: String,
+//     // pub create: chrono::NaiveDateTime,
+// }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NewUserJson {
@@ -163,7 +167,7 @@ impl TokenHelper {
                     false
                 }, // Example on how to handle a specific error
                 _ => {
-                    error!("Some other errors"); 
+                    error!("Some other errors {}", token); 
                     false
                 }
             }

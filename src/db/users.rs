@@ -26,11 +26,11 @@ pub fn create_salt(length: usize) -> String {
 }
 
 
-pub struct UserRepository {
-    pool: Pool<ConnectionManager<diesel::PgConnection>>
+pub struct UserRepository<'a> {
+    pub pool:  &'a Pool<ConnectionManager<diesel::PgConnection>>
 }
 
-impl UserRepository {
+impl UserRepository<'_> {
     // pub fn new(self, pool: Pool<ConnectionManager<diesel::PgConnection>>){
     //     self.pool = pool;
     // }

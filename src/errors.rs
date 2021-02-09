@@ -1,6 +1,7 @@
 use actix_web::http::{header, StatusCode};
 use actix_web::{HttpResponse, ResponseError};
 use diesel::{r2d2::Error};
+use header::ToStrError;
 use serde::__private::Formatter;
 use serde_derive::*;
 use std::fmt;
@@ -11,6 +12,7 @@ pub enum BackendErrorKind {
     FatalError,
     HashError,
     LoginError,
+    AuthError
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -25,9 +27,20 @@ pub struct LoginError {
     // pub status: StatusCode,
 }
 
+
+
 impl From<diesel::result::Error> for BackendErrorKind {
     fn from(e: diesel::result::Error) -> Self {
         BackendErrorKind::DieselError
+    }
+}
+
+impl From<ToStrError> for BackendError {
+    fn from(e: ToStrError) -> Self {
+        BackendError {
+            message: e.to_string(),
+            backend_error_kind: BackendErrorKind::FatalError,
+        }        
     }
 }
 
@@ -67,6 +80,7 @@ impl fmt::Display for BackendErrorKind {
             }
             BackendErrorKind::HashError => write!(f, "Failed to hash string"),
             BackendErrorKind::LoginError => write!(f, "Failed to login"),
+            BackendErrorKind::AuthError => write!(f, "Authentication error"),
         }
     }
 }
@@ -101,6 +115,7 @@ impl ResponseError for BackendError {
             BackendErrorKind::FatalError => StatusCode::INTERNAL_SERVER_ERROR,
             BackendErrorKind::HashError => StatusCode::METHOD_NOT_ALLOWED,
             BackendErrorKind::LoginError => StatusCode::UNAUTHORIZED,
+            BackendErrorKind::AuthError => StatusCode::UNAUTHORIZED
             // _ => StatusCode::IM_A_TEAPOT,
         }
     }

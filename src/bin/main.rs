@@ -7,14 +7,14 @@ use actix_web_prom::PrometheusMetrics;
 use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
 use env_logger::Env;
 use dotenv::dotenv;
-use log::{info, warn};
+use log::{debug,info, warn};
 
-use std::{collections::HashMap, env};
-use user_rust::db::friends::{add_fiend, list_friends_by_id};
+use std::{borrow::Borrow, collections::HashMap, env};
+use user_rust::db::{friends::{add_fiend, list_friends_by_id}, models::User, users::UserRepository};
 use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
-    FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserJson, UserLogin,
+    FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserLogin,
 };
 use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
@@ -79,7 +79,7 @@ async fn login(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, use
     };
 }
 
-async fn add_user(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, new_user: Json<NewUserJson>) -> Result<Json<UserJson>, BackendError> {
+async fn add_user(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, new_user: Json<NewUserJson>) -> Result<Json<User>, BackendError> {
     info!("Inserting new user");
 
     let connection = pool.get().unwrap(); //TODO: Add better error handling
@@ -91,15 +91,8 @@ async fn add_user(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, 
         &new_user.password,
     )?;
 
-    let json_user = UserJson {
-        id: response.id,
-        name: response.name,
-        comment: response.comment,
-        active: response.active,
-        password: "**********".to_string(),
-    };
 
-    Ok(Json(json_user))
+    Ok(Json(response))
 }
 
 async fn add_friend_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, friends: Json<FriendJson>) -> Result<Json<usize>, BackendError> {
@@ -112,50 +105,57 @@ async fn add_friend_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnecti
     return Ok(Json(result));
 }
 
-async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserJson>) -> Result<Json<Vec<UserJson>>, BackendError> {
+async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<User>) -> Result<Json<Vec<User>>, BackendError> {
     let connection = pool.get().unwrap(); //TODO: ADD better error handling
     let friends = list_friends_by_id(user.id, &connection)?;
 
-    let json_friends: Vec<UserJson> = friends
-        .iter()
-        .map(|raw_user| UserJson {
-            id: raw_user.id,
-            name: raw_user.name.to_string(),
-            comment: None, //Figure this one out
-            active: raw_user.active,
-            password: String::default(),
-        })
-        .collect();
+    // let json_friends: Vec<UserJson> = friends
+    //     .iter()
+    //     .map(|raw_user| UserJson {
+    //         id: raw_user.id,
+    //         name: raw_user.name.to_string(),
+    //         comment: None, //Figure this one out
+    //         active: raw_user.active,
+    //         password: String::default(),
+    //     })
+    //     .collect();
 
-    return Ok(Json(json_friends));
+    return Ok(Json(friends));
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, request: HttpRequest) -> Result<Json<Vec<UserJson>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, request: HttpRequest) -> Result<Json<Vec<User>>, BackendError> {
     info!("Listing all users");
     info!("{:#?}", request);
-    let connection = pool.get().unwrap(); //TODO: Add better error handling
 
-    let token = request.headers().get("authorization").unwrap();
-    info!("Found token: {:#?}", token);
+    let repo = UserRepository{pool: pool.get_ref()};
 
-    //TODO: MAKE get_all_users use ?
-    match get_all_users(&connection) {
-        Ok(result) => {
-            let json_users = result
-                .into_iter()
-                .map(|user| UserJson {
-                    id: user.id,
-                    name: user.name.to_string(),
-                    comment: user.comment,
-                    active: user.active,
-                    password: "*******".to_string(),
-                })
-                .collect();
 
-            Ok(Json(json_users))
+    //TODO: Create method for this
+    match request.headers().get("authorization"){
+        Some(header) => {
+            debug!("Found token");
+
+            let token = TokenHelper::extract_token_from_header_value(header.to_str()?).expect("Failed to to get header for auth token!");
+            if TokenHelper::validate_token(token.borrow()){
+                return Ok(Json(repo.get_all_users(25)?));
+            }
+
+            return Err(BackendError{
+                message: "Invalid token".to_string(),
+                backend_error_kind: BackendErrorKind::AuthError,
+
+            });
+
+        },
+        None => {
+            Err(BackendError{
+                message: "You do not have access to this!".to_string(),
+                backend_error_kind: BackendErrorKind::AuthError,
+                
+            })
         }
-        Err(error) => Err(error),
     }
+
 }
 
 pub async fn get_user_by_id_rest() -> impl Responder {
@@ -187,7 +187,7 @@ pub async fn send_message_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgCo
 }
 
 //TODO: Create a messageJson type with updated user info and stripped away sender info
-pub async fn list_messages_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserJson>) -> Result<Json<Vec<Message>>> {
+pub async fn list_messages_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<User>) -> Result<Json<Vec<Message>>> {
     let connection = pool.get().unwrap(); //TODO: Add better error handling
 
     let user = get_user_by_id(&connection, user.id)?;
