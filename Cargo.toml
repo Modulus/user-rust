@@ -1,6 +1,6 @@
 [package]
 name = "user_rust"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["John Sigvald Skauge <johnsigvaldskauge@tv2.no>"]
 edition = "2018"
 default-run = "main"
