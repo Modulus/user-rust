@@ -1,6 +1,5 @@
 use actix_web::http::{header, StatusCode};
 use actix_web::{HttpResponse, ResponseError};
-use diesel::{r2d2::Error};
 use header::ToStrError;
 use serde::__private::Formatter;
 use serde_derive::*;
@@ -30,7 +29,7 @@ pub struct LoginError {
 
 
 impl From<diesel::result::Error> for BackendErrorKind {
-    fn from(e: diesel::result::Error) -> Self {
+    fn from(_e: diesel::result::Error) -> Self {
         BackendErrorKind::DieselError
     }
 }

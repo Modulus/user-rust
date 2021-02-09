@@ -4,7 +4,7 @@ use crate::db::models::{NewUser, NewUserJson, User};
 use crate::errors::BackendError;
 use argon2::{self, Config};
 use diesel::prelude::*;
-use diesel::r2d2::{ Pool, PooledConnection, ConnectionManager, PoolError , Error};
+use diesel::r2d2::{ Pool, ConnectionManager};
 use rand::distributions::Alphanumeric;
 use rand::Rng;
 

@@ -1,6 +1,5 @@
 use actix_cors::Cors;
 use actix_files as fs;
-use actix_http::HttpMessage;
 use actix_web::{HttpRequest, web::Json};
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
 use actix_web_prom::PrometheusMetrics;
@@ -11,12 +10,11 @@ use log::{debug,info, warn};
 
 use std::{borrow::Borrow, collections::HashMap, env};
 use user_rust::db::{friends::{add_fiend, list_friends_by_id}, models::User, users::UserRepository};
-use user_rust::db::lib::establish_connection;
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
     FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserLogin,
 };
-use user_rust::db::users::{create_user_raw, get_all_users, get_user_by_id, get_user_by_name};
+use user_rust::db::users::{create_user_raw, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
 
 

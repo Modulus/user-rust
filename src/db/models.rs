@@ -1,7 +1,6 @@
 use crate::schema::friends;
 use crate::schema::messages;
 use crate::schema::users;
-use actix_http::{header, http::header};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
