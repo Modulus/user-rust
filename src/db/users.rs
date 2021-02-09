@@ -242,6 +242,8 @@ pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError> {
 
 #[cfg(test)]
 mod tests {
+    use std::env;
+
     use crate::db::lib::establish_connection;
     use crate::db::models::{NewUserJson};
     use crate::db::users::UserRepository;
@@ -249,9 +251,11 @@ mod tests {
     use diesel::{pg::PgConnection, r2d2::ConnectionManager, r2d2::Pool};
     #[test]
     fn it_crud_repo(){
-        let DATABASE_URL = "postgres://user:user@localhost/user".to_string();
 
-        let manager = ConnectionManager::<PgConnection>::new(DATABASE_URL);
+        let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
         let pool = Pool::builder().build(manager).expect("Failed to create pool");
         let repo = UserRepository{
             pool: &pool
