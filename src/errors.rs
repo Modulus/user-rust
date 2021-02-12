@@ -5,6 +5,22 @@ use serde::__private::Formatter;
 use serde_derive::*;
 use std::fmt;
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct AuthError{
+    pub code: String,
+    pub message: String
+}
+
+impl fmt::Display for AuthError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{{\"code\":\"{}\", \"message\":\"{}\"}}",
+            self.code, self.message
+        )
+    }
+}
+
 #[derive(Eq, Debug, PartialEq, Serialize)]
 pub enum BackendErrorKind {
     DieselError,
@@ -17,7 +33,7 @@ pub enum BackendErrorKind {
 #[derive(Debug, PartialEq, Serialize)]
 pub struct BackendError {
     pub message: String,
-    pub backend_error_kind: BackendErrorKind,
+    pub kind: BackendErrorKind,
 }
 
 #[derive(Debug, PartialEq, Serialize)]
@@ -38,7 +54,7 @@ impl From<ToStrError> for BackendError {
     fn from(e: ToStrError) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::FatalError,
+            kind: BackendErrorKind::FatalError,
         }        
     }
 }
@@ -47,7 +63,7 @@ impl From<diesel::result::Error> for BackendError {
     fn from(e: diesel::result::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::DieselError,
+            kind: BackendErrorKind::DieselError,
         }
     }
 }
@@ -56,7 +72,7 @@ impl From<argon2::Error> for BackendError {
     fn from(e: argon2::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::DieselError,
+            kind: BackendErrorKind::DieselError,
         }
     }
 }
@@ -65,7 +81,7 @@ impl From <diesel::r2d2::Error> for BackendError {
     fn from(e: diesel::r2d2::Error) -> Self {
         BackendError {
             message: e.to_string(),
-            backend_error_kind: BackendErrorKind::DieselError,
+            kind: BackendErrorKind::DieselError,
         }
     }
 }
@@ -89,7 +105,7 @@ impl fmt::Display for BackendError {
         write!(
             f,
             "backend_error={}, message={}",
-            self.backend_error_kind, self.message,
+            self.kind, self.message,
         )
     }
 }
@@ -109,7 +125,7 @@ impl fmt::Display for BackendError {
 
 impl ResponseError for BackendError {
     fn status_code(&self) -> StatusCode {
-        match self.backend_error_kind {
+        match self.kind {
             BackendErrorKind::DieselError => StatusCode::INTERNAL_SERVER_ERROR,
             BackendErrorKind::FatalError => StatusCode::INTERNAL_SERVER_ERROR,
             BackendErrorKind::HashError => StatusCode::METHOD_NOT_ALLOWED,

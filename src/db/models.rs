@@ -1,12 +1,17 @@
-use crate::schema::friends;
+
+use crate::{errors::AuthError, schema::friends};
 use crate::schema::messages;
 use crate::schema::users;
+use actix_http::{Error, Payload, error::{ErrorBadRequest, ErrorUnauthorized}};
+use actix_web::{FromRequest, HttpRequest};
+use actix_web_httpauth::{extractors::bearer::BearerAuth, headers::authorization::{self, Bearer}};
+use futures::future::{err, ok, Ready};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
 use jsonwebtoken::errors::ErrorKind;
 use jsonwebtoken::{EncodingKey, Header, Validation, DecodingKey};
-use log::{error};
+use log::{error, info};
 // #[macro_use]
 // use diesel::prelude::*;
 
@@ -121,7 +126,38 @@ pub struct Claims {
 
 #[derive(Serialize, Deserialize)]
 pub struct TokenHelper {
+    pub sub: String,
+    pub token: String,
+    // pub permissions: Vec<String>
 
+}
+
+impl FromRequest for TokenHelper {
+    type Error = Error;
+
+    type Future = Ready<Result<Self, Self::Error>>;
+
+    type Config = ();
+    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+        if true == true{
+            return ok(TokenHelper{ sub: "".to_string(), token: "".to_string()});
+        }
+        return err(ErrorUnauthorized(AuthError {
+            code: "".to_string(),
+            message: "Authorization header missing!".to_string(),
+        }));
+    }
+
+    fn extract(req: &HttpRequest) -> Self::Future {
+        Self::from_request(req, &mut Payload::None)
+    }
+
+    fn configure<F>(f: F) -> Self::Config
+    where
+        F: FnOnce(Self::Config) -> Self::Config,
+    {
+        f(Self::Config::default())
+    }
 }
 
 impl TokenHelper {

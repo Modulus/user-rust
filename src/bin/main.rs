@@ -66,13 +66,13 @@ async fn login(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, use
                 warn!("No matching user!");
                 Err(BackendError {
                     message: "Failed to login".to_string(),
-                    backend_error_kind: BackendErrorKind::LoginError
+                    kind: BackendErrorKind::LoginError
                 })
             }
         },
         Err(error) => Err(BackendError {
             message: format!("Fatal error during login, {:?}", error),
-            backend_error_kind: BackendErrorKind::FatalError,
+            kind: BackendErrorKind::FatalError,
         }),
     };
 }
@@ -140,7 +140,7 @@ pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection
 
             return Err(BackendError{
                 message: "Invalid token".to_string(),
-                backend_error_kind: BackendErrorKind::AuthError,
+                kind: BackendErrorKind::AuthError,
 
             });
 
@@ -148,7 +148,7 @@ pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection
         None => {
             Err(BackendError{
                 message: "You do not have access to this!".to_string(),
-                backend_error_kind: BackendErrorKind::AuthError,
+                kind: BackendErrorKind::AuthError,
                 
             })
         }
