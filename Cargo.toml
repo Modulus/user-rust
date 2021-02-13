@@ -27,4 +27,5 @@ actix-web-prom = "0.5"
 env_logger = "0.8.2"
 log = { version = "0.4.8"}
 actix-web-httpauth = "0.5.0"
+futures-util = "0.3.12"
 

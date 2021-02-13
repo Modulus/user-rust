@@ -2239,6 +2239,7 @@ dependencies = [
  "dotenv",
  "env_logger 0.8.2",
  "futures",
+ "futures-util",
  "jsonwebtoken",
  "log 0.4.14",
  "rand 0.7.3",

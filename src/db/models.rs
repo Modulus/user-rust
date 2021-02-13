@@ -7,7 +7,7 @@ use crate::schema::users;
 use actix_http::{Error, Payload, Result, error::{ErrorBadRequest, ErrorUnauthorized}, http::HeaderValue};
 use actix_web::{FromRequest, HttpRequest};
 use actix_web_httpauth::{extractors::bearer::BearerAuth, headers::authorization::{self, Bearer}};
-use futures::future::{err, ok, Ready};
+use futures_util::future::{ok, err, Ready};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
@@ -126,7 +126,7 @@ pub struct Claims {
     // pub login_session: String,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Debug)]
 pub struct TokenHelper {
     pub name: String,
     pub token: String,
@@ -143,41 +143,27 @@ impl FromRequest for TokenHelper {
     
 
     
-    fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+    fn from_request(req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
         info!("Request: {:?}", req);
 
         // Extract token
-        let token = match req.headers().get("authorization"){
+         match req.headers().get("authorization"){
             Some(header) => {
               match decode_token(&header) {
                   Ok(token_session) => {
-                      info!("Found token, returning to validation");
-                      Ok(token_session)
+                      info!("Found valid token, returning to validation");
+                      return ok(token_session);
                   }
-                  Err(err) => {
-                    error!("Failed to decode authentication key: {:?}", err);
-                    Err(AuthError{ code: "Something".to_string(), message: "Failed to decode authentication key!".to_string()})
+                  Err(error) => {
+                    return err(ErrorBadRequest(error));
                   }
               }
             }
             None => {
                 error!("Missing authentication header!");
-                Err(AuthError{ code: "Something".to_string(), message: "Failed to extract authentication header!".to_string()})
+                return err(ErrorUnauthorized(AuthError{ code: "Something".to_string(), message: "Failed to extract authentication header!".to_string()}));
             }
         };
-        // Validate token
-        return ok(token.unwrap());
-    }
-
-    fn extract(req: &HttpRequest) -> Self::Future {
-        Self::from_request(req, &mut Payload::None)
-    }
-
-    fn configure<F>(f: F) -> Self::Config
-    where
-        F: FnOnce(Self::Config) -> Self::Config,
-    {
-        f(Self::Config::default())
     }
 }
 
