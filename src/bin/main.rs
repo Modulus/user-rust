@@ -1,15 +1,15 @@
 use actix_cors::Cors;
 use actix_files as fs;
-use actix_web::{HttpRequest, web::Json};
+use actix_web::web::Json;
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
 use actix_web_prom::PrometheusMetrics;
-use diesel::{PgConnection, backend::Backend, r2d2::ConnectionManager, r2d2::{self, Pool}};
+use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
 use env_logger::Env;
 use dotenv::dotenv;
 use log::{debug,info, warn};
 
-use std::{borrow::Borrow, collections::HashMap, env};
-use user_rust::{db::{friends::{add_fiend, list_friends_by_id}, models::{User, generate_token}, users::UserRepository}, errors::AuthError};
+use std::{collections::HashMap, env};
+use user_rust::{db::{friends::{add_fiend, list_friends_by_id}, models::{User, generate_token}, users::UserRepository}};
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
     FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserLogin,
@@ -131,7 +131,7 @@ async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnec
 
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, token_session: TokenHelper) -> Result<Json<Vec<User>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, _token_sessionn: TokenHelper) -> Result<Json<Vec<User>>, BackendError> {
     info!("Listing all users");
     debug!("Access granted!");
     let repo = UserRepository{pool: pool.get_ref()};

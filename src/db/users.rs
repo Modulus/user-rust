@@ -246,10 +246,9 @@ pub fn get_all_users(conn: &PgConnection) -> Result<Vec<User>, BackendError> {
 mod tests {
     use std::env;
 
-    use crate::db::lib::establish_connection;
     use crate::db::models::{NewUserJson};
     use crate::db::users::UserRepository;
-    use crate::db::users::{create_user, delete_user_by_name, get_user_by_id, get_user_by_name};
+    // use crate::db::users::{create_user, delete_user_by_name, get_user_by_id, get_user_by_name};
     use diesel::{pg::PgConnection, r2d2::ConnectionManager, r2d2::Pool};
 
     use super::create_salt;

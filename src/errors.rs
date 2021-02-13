@@ -55,7 +55,7 @@ impl From<jsonwebtoken::errors::Error> for BackendError {
 }
 
 impl From<std::str::Utf8Error> for BackendError {
-    fn from(e: std::str::Utf8Error) -> Self {
+    fn from(_e: std::str::Utf8Error) -> Self {
         BackendError{ message: "Failed to convert from utf8 bytes to string".to_string(), kind: BackendErrorKind::FatalError}
     } 
 }

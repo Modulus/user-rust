@@ -1,5 +1,5 @@
 
-use std::borrow::Borrow;
+
 
 use crate::{errors::{AuthError, BackendError}, schema::friends};
 use crate::schema::messages;
@@ -11,7 +11,7 @@ use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
 use jsonwebtoken::{EncodingKey, Header, Validation, DecodingKey};
-use log::{debug, error, info};
+use log::{error, info};
 // #[macro_use]
 // use diesel::prelude::*;
 
