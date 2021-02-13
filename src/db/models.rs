@@ -144,6 +144,7 @@ impl FromRequest for TokenHelper {
 
     
     fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
+        info!("Request: {:?}", req);
 
         // Extract token
         let token = match req.headers().get("authorization"){
@@ -181,13 +182,17 @@ impl FromRequest for TokenHelper {
 }
 
 fn decode_token(token: &HeaderValue) -> Result<TokenHelper, AuthError> {
-    match jsonwebtoken::decode::<Claims>(token.to_str().unwrap(), &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()){
+
+    // TODO: working, but rewrite this code
+    let str_token = token.to_str().expect("Failed to unpack authorization header").split_ascii_whitespace().last().expect("Failed to trim header!").replace("\"", "");
+
+    match jsonwebtoken::decode::<Claims>(&str_token, &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()){
         Ok(deocoded_token_claim) => {
             let token_session = TokenHelper{name: deocoded_token_claim.claims.name, token: String::from(token.to_str().unwrap())};
             return Ok(token_session)
         }
         Err(err) => {
-            error!("Failed to decode token");
+            error!("Failed to decode token, {:}", err);
             return Err(AuthError{ code: "Something".to_string(), message: "Failed to decode authentication header!".to_string()});
         }
     }
