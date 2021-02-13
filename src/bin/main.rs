@@ -9,7 +9,7 @@ use dotenv::dotenv;
 use log::{debug,info, warn};
 
 use std::{borrow::Borrow, collections::HashMap, env};
-use user_rust::{db::{friends::{add_fiend, list_friends_by_id}, models::User, users::UserRepository}, errors::AuthError};
+use user_rust::{db::{friends::{add_fiend, list_friends_by_id}, models::{User, generate_token}, users::UserRepository}, errors::AuthError};
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
     FriendJson, TokenHelper, Message, NewMessage, NewUserJson, UserLogin,
@@ -58,7 +58,7 @@ async fn login(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, use
     return match argon2::verify_encoded(&expected_hash, user.password.as_bytes()) {
         Ok(valid) => match valid {
             true => {
-                let token = TokenHelper::generate_token(&user);
+                let token = generate_token(&user)?;
                 info!("Password matched hash, returning JWT token!");
                 Ok(Json(token))
             }
@@ -104,8 +104,19 @@ async fn add_friend_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnecti
 }
 
 async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<User>) -> Result<Json<Vec<User>>, BackendError> {
-    let connection = pool.get().unwrap(); //TODO: ADD better error handling
-    let friends = list_friends_by_id(user.id, &connection)?;
+
+    match pool.get(){
+        Ok(connection) => {
+            let friends = list_friends_by_id(user.id, &connection)?;
+            return Ok(Json(friends));
+
+        }
+        Err(error) => {
+            Err(BackendError{ message: error.to_string(), kind: BackendErrorKind::DieselError})
+        }
+    }
+
+
 
     // let json_friends: Vec<UserJson> = friends
     //     .iter()
@@ -118,26 +129,14 @@ async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnec
     //     })
     //     .collect();
 
-    return Ok(Json(friends));
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, token_session: Option<TokenHelper>) -> Result<Json<Vec<User>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, token_session: TokenHelper) -> Result<Json<Vec<User>>, BackendError> {
     info!("Listing all users");
+    debug!("Access granted!");
+    let repo = UserRepository{pool: pool.get_ref()};
 
-    match token_session {
-        Some(_token) => {
-            info!("Access granted!");
-            let repo = UserRepository{pool: pool.get_ref()};
-
-            return Ok(Json(repo.get_all_users(25)?));
-        }
-        _ => {
-            return Err(BackendError{ message:"Access denied".to_string(), kind: BackendErrorKind::AuthError})
-        }
-    }
-
-
-
+    return Ok(Json(repo.get_all_users(25)?));
 }
 
 pub async fn get_user_by_id_rest() -> impl Responder {

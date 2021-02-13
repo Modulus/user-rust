@@ -1,7 +1,7 @@
 
 use std::borrow::Borrow;
 
-use crate::{errors::AuthError, schema::friends};
+use crate::{errors::{AuthError, BackendError}, schema::friends};
 use crate::schema::messages;
 use crate::schema::users;
 use actix_http::{Error, Payload, Result, error::{ErrorBadRequest, ErrorUnauthorized}, http::HeaderValue};
@@ -184,57 +184,23 @@ fn decode_token(token: &HeaderValue) -> Result<TokenHelper, AuthError> {
     }
 }   
 
+pub fn generate_token(login: &UserLogin) -> Result<String, BackendError> {
+    let now = Utc::now().timestamp_nanos() / 1_000_000_000; // nanosecond -> second
+    let payload = Claims {
+        iat: now,
+        exp: now + ONE_WEEK,
+        name: login.name.clone(),
+    };
 
-impl TokenHelper {
-    pub fn generate_token(login: &UserLogin) -> String {
-        let now = Utc::now().timestamp_nanos() / 1_000_000_000; // nanosecond -> second
-        let payload = Claims {
-            iat: now,
-            exp: now + ONE_WEEK,
-            name: login.name.clone(),
-        };
-
-        jsonwebtoken::encode(
-            &Header::default(),
-            &payload,
-            &EncodingKey::from_secret("Secret which should be in rilfe".as_ref()),
-        )
-        .unwrap()
-
-    }
-
-    pub fn extract_token_from_header_value(header_value: &str) -> Option<String> {
-        match header_value.split_whitespace().last() {
-            Some(value) => {
-                return Some(String::from(value).replace("\"", ""));
-            }
-            None => {
-                return None;
-            }
-        }
-    }
-
-    pub fn validate_token(token: &String) -> bool {
-        match jsonwebtoken::decode::<Claims>(&token, &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()) {
-            Ok(_c) => true,
-            Err(err) => match *err.kind() {
-                ErrorKind::InvalidToken => {
-                    error!("Token is invalid");
-                    false
-                }, // Example on how to handle a specific error
-                ErrorKind::InvalidIssuer => {
-                    error!("Issuer is invalid");
-                    false
-                }, // Example on how to handle a specific error
-                _ => {
-                    error!("Some other errors {}", token); 
-                    false
-                }
-            }
-        }
-    }
+    Ok(jsonwebtoken::encode(
+        &Header::default(),
+        &payload,
+        &EncodingKey::from_secret("Secret which should be in rilfe".as_ref()),
+    )?)
 
 }
+
+
 
 
 #[cfg(test)]
@@ -301,23 +267,6 @@ mod tests {
         assert!(TokenHelper::validate_token(&token) == false);
     }
 
-    #[test]
-    fn test_extract_token_from_header_value_has_expected_format_returns_expected_string(){
-        let authorization ="Bearer \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk\"";
-
-        let result = TokenHelper::extract_token_from_header_value(authorization);
-
-        assert_eq!(String::from(result.unwrap()), String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk"))
-    }
-
-    #[test]
-    fn test_extract_token_from_header_has_just_token_returns_same_token(){
-        let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk";
-
-        let result = TokenHelper::extract_token_from_header_value(token);
-
-        assert_eq!(result.unwrap(), String::from(token));
-    }
 
 
     #[test]

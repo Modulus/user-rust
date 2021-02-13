@@ -1,5 +1,6 @@
 use actix_web::http::{header, StatusCode};
 use actix_web::{HttpResponse, ResponseError};
+use diesel::r2d2;
 use header::ToStrError;
 use serde::__private::Formatter;
 use serde_derive::*;
@@ -15,8 +16,8 @@ impl fmt::Display for AuthError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
-            "{{\"code\":\"{}\", \"message\":\"{}\"}}",
-            self.code, self.message
+            "{{\"message\":\"{}\"}}",
+            self.message
         )
     }
 }
@@ -43,12 +44,23 @@ pub struct LoginError {
 }
 
 
+impl From<jsonwebtoken::errors::Error> for BackendError {
+    fn from(_e: jsonwebtoken::errors::Error) -> Self {
+        BackendError {
+            message: "Problem with authentication token!".to_string(),
+            kind: BackendErrorKind::AuthError,
+            
+        }
+    }  
+}
+
 
 impl From<diesel::result::Error> for BackendErrorKind {
     fn from(_e: diesel::result::Error) -> Self {
         BackendErrorKind::DieselError
     }
 }
+
 
 impl From<ToStrError> for BackendError {
     fn from(e: ToStrError) -> Self {
@@ -77,8 +89,8 @@ impl From<argon2::Error> for BackendError {
     }
 }
 
-impl From <diesel::r2d2::Error> for BackendError {
-    fn from(e: diesel::r2d2::Error) -> Self {
+impl From <r2d2::Error> for BackendError {
+    fn from(e: r2d2::Error) -> Self {
         BackendError {
             message: e.to_string(),
             kind: BackendErrorKind::DieselError,
