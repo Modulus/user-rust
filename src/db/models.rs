@@ -1,8 +1,10 @@
 
+use std::borrow::Borrow;
+
 use crate::{errors::AuthError, schema::friends};
 use crate::schema::messages;
 use crate::schema::users;
-use actix_http::{Error, Payload, error::{ErrorBadRequest, ErrorUnauthorized}};
+use actix_http::{Error, Payload, Result, error::{ErrorBadRequest, ErrorUnauthorized}, http::HeaderValue};
 use actix_web::{FromRequest, HttpRequest};
 use actix_web_httpauth::{extractors::bearer::BearerAuth, headers::authorization::{self, Bearer}};
 use futures::future::{err, ok, Ready};
@@ -11,7 +13,7 @@ use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
 use jsonwebtoken::errors::ErrorKind;
 use jsonwebtoken::{EncodingKey, Header, Validation, DecodingKey};
-use log::{error, info};
+use log::{debug, error, info};
 // #[macro_use]
 // use diesel::prelude::*;
 
@@ -126,7 +128,7 @@ pub struct Claims {
 
 #[derive(Serialize, Deserialize)]
 pub struct TokenHelper {
-    pub sub: String,
+    pub name: String,
     pub token: String,
     // pub permissions: Vec<String>
 
@@ -138,14 +140,32 @@ impl FromRequest for TokenHelper {
     type Future = Ready<Result<Self, Self::Error>>;
 
     type Config = ();
+    
+
+    
     fn from_request(req: &HttpRequest, payload: &mut Payload) -> Self::Future {
-        if true == true{
-            return ok(TokenHelper{ sub: "".to_string(), token: "".to_string()});
-        }
-        return err(ErrorUnauthorized(AuthError {
-            code: "".to_string(),
-            message: "Authorization header missing!".to_string(),
-        }));
+
+        // Extract token
+        let token = match req.headers().get("authorization"){
+            Some(header) => {
+              match decode_token(&header) {
+                  Ok(token_session) => {
+                      info!("Found token, returning to validation");
+                      Ok(token_session)
+                  }
+                  Err(err) => {
+                    error!("Failed to decode authentication key: {:?}", err);
+                    Err(AuthError{ code: "Something".to_string(), message: "Failed to decode authentication key!".to_string()})
+                  }
+              }
+            }
+            None => {
+                error!("Missing authentication header!");
+                Err(AuthError{ code: "Something".to_string(), message: "Failed to extract authentication header!".to_string()})
+            }
+        };
+        // Validate token
+        return ok(token.unwrap());
     }
 
     fn extract(req: &HttpRequest) -> Self::Future {
@@ -159,6 +179,20 @@ impl FromRequest for TokenHelper {
         f(Self::Config::default())
     }
 }
+
+fn decode_token(token: &HeaderValue) -> Result<TokenHelper, AuthError> {
+    match jsonwebtoken::decode::<Claims>(token.to_str().unwrap(), &DecodingKey::from_secret("Secret which should be in rilfe".as_ref()), &Validation::default()){
+        Ok(deocoded_token_claim) => {
+            let token_session = TokenHelper{name: deocoded_token_claim.claims.name, token: String::from(token.to_str().unwrap())};
+            return Ok(token_session)
+        }
+        Err(err) => {
+            error!("Failed to decode token");
+            return Err(AuthError{ code: "Something".to_string(), message: "Failed to decode authentication header!".to_string()});
+        }
+    }
+}   
+
 
 impl TokenHelper {
     pub fn generate_token(login: &UserLogin) -> String {
@@ -214,11 +248,14 @@ impl TokenHelper {
 
 #[cfg(test)]
 mod tests {
+    use actix_http::http::HeaderValue;
     use jsonwebtoken::TokenData;
 
     use crate::db::lib::establish_connection;
     use crate::db::models::NewUserJson;
     use crate::db::models::{TokenHelper, UserLogin};
+
+    use super::decode_token;
     
     #[test]
     fn test_validate_has_changed_valid_token_is_valid_is_false(){
@@ -300,6 +337,24 @@ mod tests {
 
         assert_eq!(result.unwrap(), String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk"));
     }
+
+    #[test]
+    fn test_decode_token_vas_valid_info(){
+
+        let login = UserLogin{ name: String::from("john"), password: String::from("My secret pass")};
+        let token = TokenHelper::generate_token(&login);
+        let header_value = HeaderValue::from_str(&token).unwrap();
+
+        
+
+        let token_session = decode_token(&header_value).unwrap();
+
+        assert_eq!(token_session.name, "john");
+        assert_eq!(token_session.token, token);
+
+
+    }
+
 
 
 }
