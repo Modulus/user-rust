@@ -108,7 +108,7 @@ pub fn remove_friend(
 
 #[cfg(test)]
 mod test {
-    use crate::db::friends::{add_fiend, add_friend_by_id, list_friends, remove_friend};
+    use crate::db::friends::{add_fiend, list_friends, remove_friend};
     use crate::db::lib::establish_connection;
     use crate::db::models::NewUserJson;
     use crate::db::users::{create_user, delete_user_by_name};
@@ -164,60 +164,60 @@ mod test {
         assert!(add_fiend(&user1, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user1, &connection).unwrap().len(), 3);
 
-        assert!(add_fiend(&user2, &user1, &connection).is_ok());;
-        assert!(add_fiend(&user2, &user3, &connection).is_ok());;
-        assert!(add_fiend(&user2, &user4, &connection).is_ok());;
+        assert!(add_fiend(&user2, &user1, &connection).is_ok());
+        assert!(add_fiend(&user2, &user3, &connection).is_ok());
+        assert!(add_fiend(&user2, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user2, &connection).unwrap().len(), 3);
 
-        assert!(add_fiend(&user3, &user1, &connection).is_ok());;
-        assert!(add_fiend(&user3, &user2, &connection).is_ok());;
-        assert!(add_fiend(&user3, &user4, &connection).is_ok());;
+        assert!(add_fiend(&user3, &user1, &connection).is_ok());
+        assert!(add_fiend(&user3, &user2, &connection).is_ok());
+        assert!(add_fiend(&user3, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user3, &connection).unwrap().len(), 3);
 
-        assert!(add_fiend(&user4, &user1, &connection).is_ok());;
-        assert!(add_fiend(&user4, &user2, &connection).is_ok());;
-        assert!(add_fiend(&user4, &user3, &connection).is_ok());;
+        assert!(add_fiend(&user4, &user1, &connection).is_ok());
+        assert!(add_fiend(&user4, &user2, &connection).is_ok());
+        assert!(add_fiend(&user4, &user3, &connection).is_ok());
         assert_eq!(list_friends(&user4, &connection).unwrap().len(), 3);
 
-        remove_friend(&user1, &user2, &connection);
+        assert!(remove_friend(&user1, &user2, &connection).is_ok());
         assert_eq!(list_friends(&user1, &connection).unwrap().len(), 2);
 
-        remove_friend(&user1, &user3, &connection);
+        assert!(remove_friend(&user1, &user3, &connection).is_ok());
         assert_eq!(list_friends(&user1, &connection).unwrap().len(), 1);
 
-        remove_friend(&user1, &user4, &connection);
+        assert!(remove_friend(&user1, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user1, &connection).unwrap().len(), 0);
 
-        remove_friend(&user2, &user1, &connection);
+        assert!(remove_friend(&user2, &user1, &connection).is_ok());
         assert_eq!(list_friends(&user2, &connection).unwrap().len(), 2);
 
-        remove_friend(&user2, &user3, &connection);
+        assert!(remove_friend(&user2, &user3, &connection).is_ok());
         assert_eq!(list_friends(&user2, &connection).unwrap().len(), 1);
 
-        remove_friend(&user2, &user4, &connection);
+        assert!(remove_friend(&user2, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user2, &connection).unwrap().len(), 0);
 
-        remove_friend(&user3, &user1, &connection);
+        assert!(remove_friend(&user3, &user1, &connection).is_ok());
         assert_eq!(list_friends(&user3, &connection).unwrap().len(), 2);
 
-        remove_friend(&user3, &user2, &connection);
+        assert!(remove_friend(&user3, &user2, &connection).is_ok());
         assert_eq!(list_friends(&user3, &connection).unwrap().len(), 1);
 
-        remove_friend(&user3, &user4, &connection);
+        assert!(remove_friend(&user3, &user4, &connection).is_ok());
         assert_eq!(list_friends(&user3, &connection).unwrap().len(), 0);
 
-        remove_friend(&user4, &user1, &connection);
+        assert!(remove_friend(&user4, &user1, &connection).is_ok());
         assert_eq!(list_friends(&user4, &connection).unwrap().len(), 2);
 
-        remove_friend(&user4, &user2, &connection);
+        assert!(remove_friend(&user4, &user2, &connection).is_ok());
         assert_eq!(list_friends(&user4, &connection).unwrap().len(), 1);
 
-        remove_friend(&user4, &user3, &connection);
+        assert!(remove_friend(&user4, &user3, &connection).is_ok());
         assert_eq!(list_friends(&user4, &connection).unwrap().len(), 0);
 
-        delete_user_by_name(&connection, &user1.name);
-        delete_user_by_name(&connection, &user2.name);
-        delete_user_by_name(&connection, &user3.name);
-        delete_user_by_name(&connection, &user4.name);
+        assert!(delete_user_by_name(&connection, &user1.name).is_ok());
+        assert!(delete_user_by_name(&connection, &user2.name).is_ok());
+        assert!(delete_user_by_name(&connection, &user3.name).is_ok());
+        assert!(delete_user_by_name(&connection, &user4.name).is_ok());
     }
 }

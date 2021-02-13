@@ -108,41 +108,43 @@ mod tests {
         let user1 = result1.unwrap();
         let user2 = result2.unwrap();
 
-        send_message(
+        assert!(send_message(
             &user1,
             &user2,
             "Hi there".to_string(),
             "First message!".to_string(),
             &connection,
-        );
-        send_message(
+        ).is_ok());
+
+        assert!(send_message(
             &user2,
             &user1,
             "Re:hi there".to_string(),
             "Kewl!".to_string(),
             &connection,
-        );
-        send_message(
+        ).is_ok());
+        assert!(send_message(
             &user1,
             &user2,
             "Re:hi there".to_string(),
             "What are you up to these days".to_string(),
             &connection,
-        );
-        send_message(
+        ).is_ok());
+        assert!(send_message(
             &user2,
             &user1,
             "Re:hi there".to_string(),
             "Learning rust, how about you?".to_string(),
             &connection,
-        );
-        send_message(
+        ).is_ok());
+
+        assert!(send_message(
             &user1,
             &user2,
             "Re:hi there".to_string(),
             "Begone deamon!!!! :P".to_string(),
             &connection,
-        );
+        ).is_ok());
 
         let messages_user1 = list_sent_messages(&user1, &connection).unwrap();
         assert_eq!(messages_user1.len(), 3);
@@ -168,11 +170,9 @@ mod tests {
         // assert_eq!(deleted_messages_user1.len() ,0);
         println!("{:?}", deleted_messages_user1);
 
-        let deleted_messages_user2 = list_sent_messages(&user2, &connection);
-        // assert_eq!(deleted_messages_user2.len(), 0);
-        println!("{:?}", deleted_messages_user1);
+        assert!(list_sent_messages(&user2, &connection).is_ok());
 
-        delete_user_by_name(&connection, &user1.name);
-        delete_user_by_name(&connection, &user2.name);
+        assert!(delete_user_by_name(&connection, &user1.name).is_ok());
+        assert!(delete_user_by_name(&connection, &user2.name).is_ok());
     }
 }

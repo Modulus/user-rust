@@ -10,7 +10,6 @@ use futures_util::future::{ok, err, Ready};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
 //TODO: Add date types for all models
-use jsonwebtoken::errors::ErrorKind;
 use jsonwebtoken::{EncodingKey, Header, Validation, DecodingKey};
 use log::{debug, error, info};
 // #[macro_use]
@@ -123,13 +122,13 @@ pub struct Claims {
     //data
     pub name: String,
     // pub login_session: String,
+
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct TokenHelper {
     pub name: String,
     pub token: String,
-    // pub permissions: Vec<String>
 
 }
 
