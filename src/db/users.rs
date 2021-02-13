@@ -18,11 +18,13 @@ pub fn create_hash(password: &str, salt: &str) -> Result<String, BackendError> {
     )?)
 }
 
-pub fn create_salt(length: usize) -> String {
-    return rand::thread_rng()
+pub fn create_salt(length: usize) -> Result<String, BackendError> {
+    let bytes =  rand::thread_rng()
         .sample_iter(&Alphanumeric)
         .take(length)
-        .collect::<String>();
+        .collect::<Vec<u8>>();
+
+    return Ok(String::from(str::from_utf8(&bytes)?));
 }
 
 
@@ -41,7 +43,7 @@ impl UserRepository<'_> {
         let conn = self.pool.get().unwrap();
 
         let salt_length: usize = 30;
-        let salt = create_salt(salt_length);
+        let salt = create_salt(salt_length)?;
     
         let hashed_pass = create_hash(&user.password, &salt);
     
@@ -104,7 +106,7 @@ impl UserRepository<'_> {
         use crate::schema::users;
     
         let salt_length: usize = 30;
-        let salt = create_salt(salt_length);
+        let salt = create_salt(salt_length)?;
     
         let hashed_pass = create_hash(password, &salt)?;
     
@@ -129,7 +131,7 @@ pub fn create_user(conn: &PgConnection, user: &NewUserJson) -> Result<User, Back
     use crate::schema::users;
 
     let salt_length: usize = 30;
-    let salt = create_salt(salt_length);
+    let salt = create_salt(salt_length)?;
 
     let hashed_pass = create_hash(&user.password, &salt);
 
@@ -157,7 +159,7 @@ pub fn create_user_raw<'a>(
     use crate::schema::users;
 
     let salt_length: usize = 30;
-    let salt = create_salt(salt_length);
+    let salt = create_salt(salt_length)?;
 
     let hashed_pass = create_hash(password, &salt)?;
 
@@ -249,6 +251,22 @@ mod tests {
     use crate::db::users::UserRepository;
     use crate::db::users::{create_user, delete_user_by_name, get_user_by_id, get_user_by_name};
     use diesel::{pg::PgConnection, r2d2::ConnectionManager, r2d2::Pool};
+
+    use super::create_salt;
+
+
+    #[test]
+    fn test_create_salt(){
+        let salt_result = create_salt(100);
+
+        assert!(salt_result.is_ok());
+        
+        let salt = salt_result.unwrap();
+
+        assert!(salt.len() >= 100);
+        
+    }
+
     #[test]
     fn it_crud_repo(){
 

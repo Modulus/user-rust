@@ -6,7 +6,6 @@ use crate::schema::messages;
 use crate::schema::users;
 use actix_http::{Error, Payload, Result, error::{ErrorBadRequest, ErrorUnauthorized}, http::HeaderValue};
 use actix_web::{FromRequest, HttpRequest};
-use actix_web_httpauth::{extractors::bearer::BearerAuth, headers::authorization::{self, Bearer}};
 use futures_util::future::{ok, err, Ready};
 use chrono::prelude::*;
 use serde::{Deserialize, Serialize};
@@ -206,20 +205,23 @@ pub fn generate_token(login: &UserLogin) -> Result<String, BackendError> {
 #[cfg(test)]
 mod tests {
     use actix_http::http::HeaderValue;
-    use jsonwebtoken::TokenData;
+    use crate::db::models::UserLogin;
 
-    use crate::db::lib::establish_connection;
-    use crate::db::models::NewUserJson;
-    use crate::db::models::{TokenHelper, UserLogin};
-
-    use super::decode_token;
+    use super::{decode_token, generate_token};
     
     #[test]
     fn test_validate_has_changed_valid_token_is_valid_is_false(){
         let token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI4NTUwMzksImV4cCI6MTYxMzQ1OTgzOSwibmFtZSI6ImpvaG4ifQ.Uy6BBphzY7GjclDM68nFKhUJfBoYGutdkXMoWZKQBug";
         let modified = String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI4NTUwMzksImV4cCI6MTYxMzQ1OTgzOSwibmFtZSI6ImpvaG4ifQ.Uy6BBphzY7GjclDM68nFKhUJfBoYGutdkXMoWZKQBUG");
 
-        assert!(TokenHelper::validate_token(&modified) == false);
+        // Check that this token actually is valid
+        let header = HeaderValue::from_str(&token).unwrap();
+        assert!(decode_token(&header).is_ok());
+
+        // Verify that this token has been altered and is invalid
+        let header2 = HeaderValue::from_str(&modified).unwrap();
+        assert!(decode_token(&header2).is_err());
+
     }
 
 
@@ -231,13 +233,15 @@ mod tests {
             password: String::from("Pass")
         };
 
-        let token = TokenHelper::generate_token(&user_login);
+        let token = generate_token(&user_login).unwrap();
 
         assert!(token.len() > 0);
         println!("{}", token);
 
+        let header = HeaderValue::from_str(&token);
 
-        assert!(TokenHelper::validate_token(&token))
+        assert!(header.is_ok());
+
     }
 
     #[test]
@@ -247,7 +251,7 @@ mod tests {
             password: String::from("Pass")
         };
 
-        let token = TokenHelper::generate_token(&user_login);
+        let token = generate_token(&user_login).unwrap();
 
         assert!(token.len() > 0);
 
@@ -255,7 +259,12 @@ mod tests {
         new_token.push_str(&token);
         new_token.push_str("asdf");
 
-        assert!(TokenHelper::validate_token(&new_token) == false);
+        // assert!(validate_token(&new_token) == false);
+
+        let header = HeaderValue::from_str(&new_token).unwrap();
+
+        assert!(decode_token(&header).is_err());
+
 
 
     }
@@ -264,25 +273,20 @@ mod tests {
     fn test_valid_has_gibberish_token_is_invalid(){
 
         let token = String::from("Dette er bare drit!");
-        assert!(TokenHelper::validate_token(&token) == false);
+
+        let header = HeaderValue::from_str(&token).unwrap();
+
+        assert!(decode_token(&header).is_err());
+
     }
 
 
-
-    #[test]
-    fn test_extract_token_from_header_value_has_quotes_returns_string_without_quotes(){
-        let token = "\"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk\"";
-
-        let result = TokenHelper::extract_token_from_header_value(token);
-
-        assert_eq!(result.unwrap(), String::from("eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpYXQiOjE2MTI0NzM1MDAsImV4cCI6MTYxMzA3ODMwMCwidXNlciI6ImpvaG4ifQ.aBe4D5uFpKEXF_QjRrfyLIP6qdS4glQM1Ty-yc2bOXk"));
-    }
 
     #[test]
     fn test_decode_token_vas_valid_info(){
 
         let login = UserLogin{ name: String::from("john"), password: String::from("My secret pass")};
-        let token = TokenHelper::generate_token(&login);
+        let token = generate_token(&login).unwrap();
         let header_value = HeaderValue::from_str(&token).unwrap();
 
         

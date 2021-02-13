@@ -10,22 +10,22 @@ default-run = "main"
 [dependencies]
 diesel = { version = "1.4.5", features =  ["postgres", "numeric", "uuid", "quickcheck", "serde_json", "chrono", "r2d2"] }
 chrono = { version = "0.4", features = ["serde"] }
-serde = { version = "1.0.116", features = ["derive"] }
-serde_derive = { version = "1.0.117"}
+serde = { version = "1.0.123", features = ["derive"] }
+serde_derive = { version = "1.0.123"}
 dotenv = "0.15.0"
 rust-argon2 = "0.8"
-rand = "0.7"
+rand = "0.8"
 actix-web = "3"
-actix-http = "2.1.0"
-actix-files = "0.4.0"
-actix-cors = "0.5.3"
+actix-http = "2.2.0"
+actix-files = "0.5.0"
+actix-cors = "0.5.4"
 jsonwebtoken = "7.2.0"
-futures = "0.3.7"
+futures = "0.3.12"
 #prometheus = "0.10.0"
 actix-web-prom = "0.5"
 #Logging
 env_logger = "0.8.2"
-log = { version = "0.4.8"}
-actix-web-httpauth = "0.5.0"
+log = { version = "0.4.14"}
+# actix-web-httpauth = "0.5.0"
 futures-util = "0.3.12"
 
