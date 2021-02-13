@@ -9,7 +9,7 @@
             "request": "launch",
             "name": "Debug",
             "program": "${workspaceFolder}/target/debug/main",
-            "args": [],
+            "args": ["RUST_BACKTRACE=full"],
             "cwd": "${workspaceFolder}"
         }
     ]

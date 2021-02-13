@@ -18,31 +18,6 @@ use user_rust::db::users::{create_user_raw, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
 
 
-// TODO: https://turreta.com/2020/06/07/actix-web-basic-and-bearer-authentication-examples/
-//TODO: Add jwt verification to all call
-// #[get("/")]
-// async fn debug() -> impl Responder {
-//     println!("Debug!!!");
-//     format!("Hello wøøøøørking!!! {:?}", "Svada")
-// }
-
-// async fn bearer_auth_validator(req: ServiceRequest, credentials: BearerAuth) -> Result<ServiceRequest, Error> {
-//     let config = req
-//         .app_data::<Config>()
-//         .map(|data| data.get_ref().clone())
-//         .unwrap_or_else(Default::default);
-//     match validate_token(credentials.token()) {
-//         Ok(res) => {
-//             if res == true {
-//                 Ok(req)
-//             } else {
-//                 Err(AuthenticationError::from(config).into())
-//             }
-//         }
-//         Err(_) => Err(AuthenticationError::from(config).into()),
-//     }
-// }
-
 #[get("/{id}/{name}/index.html")]
 async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responder {
     format!("Hello {}! id:{}", name, id)
@@ -131,7 +106,7 @@ async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnec
 
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, _token_sessionn: TokenHelper) -> Result<Json<Vec<User>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, _token_session: TokenHelper) -> Result<Json<Vec<User>>, BackendError> {
     info!("Listing all users");
     debug!("Access granted!");
     let repo = UserRepository{pool: pool.get_ref()};
@@ -143,8 +118,15 @@ pub async fn get_user_by_id_rest() -> impl Responder {
     format!("hello from get users by id")
 }
 
-pub async fn delete_user_rest() -> impl Responder {
-    format!("hello from delete user")
+pub async fn delete_user_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, _token_session: TokenHelper, user: Json<User>) -> Result<Json<usize>, BackendError> {
+    info!("Deleting user with name: {}", user.name);
+    let repo = UserRepository{pool: pool.get_ref()};
+    warn!("Fetching user!");
+    let user_to_delete = repo.get(&user.name)?;
+
+    info!("Returning information of deleted user");
+
+    return Ok(Json(repo.delete(&user_to_delete.name)?));
 }
 
 pub async fn send_message_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, message: Json<NewMessage>) -> Result<Json<String>, BackendError> {
@@ -195,22 +177,6 @@ async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("INFO")).init();
 
 
-    // let repo = UserRepository{
-    //     pool: pool
-    // };
-    // let manager = ConnectionManager::<PgConnection>::new("");
-    // let pool = Pool::builder().build(manager).expect("Failed to create pool");
-    // HttpServer::new(move || {
-    //     App::new(pool.clone())
-    //         .resource("/", web::get().to(login))
-    // })
-    // .bind("127.0.0.1:8080")?
-    // .run()
-    // .await;
-
-    // env_logger::init();
-    // let main_server = HttpServer::new(move || {
-
     HttpServer::new(move || {
         // let auth = HttpAuthentication::basic(basic_auth_validator);
         let mut labels = HashMap::new();
@@ -238,6 +204,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .route("/login", web::post().to(login))
             .route("/users/add", web::post().to(add_user))
+            .route("/users/delete", web::delete().to(delete_user_rest))
             .route("/users", web::get().to(get_users))
             .route("/friends/add", web::post().to(add_friend_rest))
             .route("/friends", web::get().to(list_friends_rest))
@@ -263,4 +230,92 @@ async fn main() -> std::io::Result<()> {
     // future::try_join(main_server, metrics_server).await?;
     //
     // Ok(())
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use actix_http::http::Method;
+    use actix_web::{test, web, App};
+
+    #[actix_rt::test]
+    async fn test_login_with_no_credentials_throws_server_error() {
+        let mut app = test::init_service(App::new().route("/", web::get().to(login))).await;
+        let req = test::TestRequest::with_header("content-type", "text/plain").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_server_error());
+    }
+
+    #[actix_rt::test]
+    async fn test_login_has_credentials_but_not_registered_user_fails() {
+        let mut app = test::init_service(App::new().route("/", web::get().to(login))).await;
+
+        let login = UserLogin{ name: "nobody".to_string(), password: "My secret".to_string()};
+        let req = test::TestRequest::with_header("content-type", "text/plain").set_json(&login).to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_server_error());
+    }
+
+    #[actix_rt::test]
+    async fn test_login_after_created_user_login_is_success_full(){
+
+        dotenv().ok();
+        let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        let pool = Pool::builder().max_size(1).build(manager).expect("Failed to create pool");
+
+
+        let mut app = test::init_service(App::new()
+            .data(pool)
+            .route("/login", web::get().to(login))
+            .route("/register", web::post().to(add_user))
+            .route("/delete", web::delete().to(delete_user_rest)))
+            .await;
+
+
+        let new_user = NewUserJson{ name: "nobody".to_string(), comment: "Empty".to_string(), active: true, password: "My secret 1234".to_string()};
+
+        let register_req = test::TestRequest::with_header("content-type", "application/json").set_json(&new_user).method(Method::POST).uri("/register").to_request();
+        let register_resp = test::call_service(&mut app, register_req).await;
+        assert!(register_resp.status().is_success());
+
+
+        let login = UserLogin{ name: "nobody".to_string(), password: "My secret 1234".to_string()};
+        let req = test::TestRequest::with_header("content-type", "application/json").set_json(&login).method(Method::GET).uri("/login").to_request();
+        let resp = test::call_service(&mut app, req).await;
+        assert!(resp.status().is_success());
+    }
+
+    #[actix_rt::test]
+    async fn test_double_registered_user_fails_second_time(){
+        dotenv().ok();
+        let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set");
+        let manager = ConnectionManager::<PgConnection>::new(database_url);
+        let pool = Pool::builder().max_size(1).build(manager).expect("Failed to create pool");
+
+
+        let mut app = test::init_service(App::new()
+            .data(pool)
+            .route("/login", web::get().to(login))
+            .route("/register", web::post().to(add_user))
+            .route("/delete", web::delete().to(delete_user_rest)))
+            .await;
+
+
+        let new_user = NewUserJson{ name: "nobody-second".to_string(), comment: "Empty".to_string(), active: true, password: "My secret 1234".to_string()};
+
+        let register_req1 = test::TestRequest::with_header("content-type", "application/json").set_json(&new_user).method(Method::POST).uri("/register").to_request();
+        let register_resp1 = test::call_service(&mut app, register_req1).await;
+        assert!(register_resp1.status().is_success());
+
+
+        let register_req2 = test::TestRequest::with_header("content-type", "application/json").set_json(&new_user).method(Method::POST).uri("/register").to_request();
+        let register_resp2 = test::call_service(&mut app, register_req2).await;
+        assert!(register_resp2.status().is_server_error());
+
+    }
+ 
 }
