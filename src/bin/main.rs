@@ -121,38 +121,15 @@ async fn list_friends_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnec
     return Ok(Json(friends));
 }
 
-pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, request: HttpRequest) -> Result<Json<Vec<User>>, BackendError> {
+pub async fn get_users(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, request: HttpRequest, token_session: Option<TokenHelper>) -> Result<Json<Vec<User>>, BackendError> {
     info!("Listing all users");
     info!("{:#?}", request);
 
     let repo = UserRepository{pool: pool.get_ref()};
 
 
-    //TODO: Create method for this
-    match request.headers().get("authorization"){
-        Some(header) => {
-            debug!("Found token");
+    return Ok(Json(repo.get_all_users(25)?));
 
-            let token = TokenHelper::extract_token_from_header_value(header.to_str()?).expect("Failed to to get header for auth token!");
-            if TokenHelper::validate_token(token.borrow()){
-                return Ok(Json(repo.get_all_users(25)?));
-            }
-
-            return Err(BackendError{
-                message: "Invalid token".to_string(),
-                kind: BackendErrorKind::AuthError,
-
-            });
-
-        },
-        None => {
-            Err(BackendError{
-                message: "You do not have access to this!".to_string(),
-                kind: BackendErrorKind::AuthError,
-                
-            })
-        }
-    }
 
 }
 
