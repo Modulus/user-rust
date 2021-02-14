@@ -1,14 +1,15 @@
 use actix_cors::Cors;
 use actix_files as fs;
-use actix_web::web::Json;
+use actix_web::{HttpRequest, web::Json};
 use actix_web::{get, middleware::Logger, web, App, HttpResponse, HttpServer, Responder, Result};
 use actix_web_prom::PrometheusMetrics;
 use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
 use env_logger::Env;
 use dotenv::dotenv;
 use log::{debug,info, warn};
+use web::resource;
 
-use std::{collections::HashMap, env};
+use std::{borrow::Borrow, collections::HashMap, env};
 use user_rust::{db::{friends::{add_fiend, list_friends_by_id}, models::{User, generate_token}, users::UserRepository}};
 use user_rust::db::messages::{list_all_messages, send_message};
 use user_rust::db::models::{
@@ -18,10 +19,10 @@ use user_rust::db::users::{create_user_raw, get_user_by_id, get_user_by_name};
 use user_rust::errors::{BackendError, BackendErrorKind};
 
 
-#[get("/{id}/{name}/index.html")]
-async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responder {
-    format!("Hello {}! id:{}", name, id)
-}
+// #[get("/{id}/{name}/index.html")]
+// async fn index(web::Path((id, name)): web::Path<(u32, String)>) -> impl Responder {
+//     format!("Hello {}! id:{}", name, id)
+// }
 
 async fn login(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, user: Json<UserLogin>) -> Result<Json<String>, BackendError> {
     let connection = pool.get().unwrap(); //TODO: Fix error handling
@@ -118,15 +119,25 @@ pub async fn get_user_by_id_rest() -> impl Responder {
     format!("hello from get users by id")
 }
 
-pub async fn delete_user_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, _token_session: TokenHelper, user: Json<User>) -> Result<Json<usize>, BackendError> {
-    info!("Deleting user with name: {}", user.name);
+pub async fn delete_user_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, web::Path((id, name)): web::Path<(i32, String)>, _token_session: TokenHelper) -> Result<Json<usize>, BackendError> { //_token_session: TokenHelper
+    
+
+    warn!("Deleting user!");
+     info!("Deleting user with name: {} and id {}", name, id);
     let repo = UserRepository{pool: pool.get_ref()};
-    warn!("Fetching user!");
-    let user_to_delete = repo.get(&user.name)?;
+    // warn!("Fetching user!");
+    let user_by_name = repo.get(name.to_string().borrow())?;
+    let user_by_id = repo.get_user_by_id(id)?;
 
-    info!("Returning information of deleted user");
+    if user_by_name.name == user_by_id.name {
+        warn!("User name and id is matching, deleting user with id: {}", id);
+        return Ok(Json(repo.delete(&name)?));
 
-    return Ok(Json(repo.delete(&user_to_delete.name)?));
+    }
+
+    return Err(BackendError { message: "User and id does not match".to_string(), kind: BackendErrorKind::FatalError });
+
+
 }
 
 pub async fn send_message_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, message: Json<NewMessage>) -> Result<Json<String>, BackendError> {
@@ -204,7 +215,7 @@ async fn main() -> std::io::Result<()> {
             .wrap(Logger::new("%a %{User-Agent}i"))
             .route("/login", web::post().to(login))
             .route("/users/add", web::post().to(add_user))
-            .route("/users/delete", web::delete().to(delete_user_rest))
+            .service(resource("/users/delete/{id}/{name}").route(web::delete().to(delete_user_rest)))
             .route("/users", web::get().to(get_users))
             .route("/friends/add", web::post().to(add_friend_rest))
             .route("/friends", web::get().to(list_friends_rest))
@@ -286,6 +297,7 @@ mod tests {
         let req = test::TestRequest::with_header("content-type", "application/json").set_json(&login).method(Method::GET).uri("/login").to_request();
         let resp = test::call_service(&mut app, req).await;
         assert!(resp.status().is_success());
+
     }
 
     #[actix_rt::test]
