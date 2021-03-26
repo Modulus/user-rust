@@ -6,7 +6,7 @@ use actix_web_prom::PrometheusMetrics;
 use diesel::{PgConnection, r2d2::ConnectionManager, r2d2::{self, Pool}};
 use env_logger::Env;
 use dotenv::dotenv;
-use log::{debug,info, warn};
+use log::{debug, error, info, warn};
 use web::resource;
 
 use std::{borrow::Borrow, collections::HashMap, env};
@@ -119,23 +119,24 @@ pub async fn get_user_by_id_rest() -> impl Responder {
     format!("hello from get users by id")
 }
 
-pub async fn delete_user_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, web::Path((id, name)): web::Path<(i32, String)>, _token_session: TokenHelper) -> Result<Json<usize>, BackendError> { //_token_session: TokenHelper
+pub async fn delete_user_rest(pool: web::Data<r2d2::Pool<ConnectionManager<PgConnection>>>, web::Path((name)): web::Path<(String)>, _token_session: TokenHelper) -> Result<Json<usize>, BackendError> { //_token_session: TokenHelper
     
 
     warn!("Deleting user!");
-     info!("Deleting user with name: {} and id {}", name, id);
+     info!("Deleting user with name: {}", name);
     let repo = UserRepository{pool: pool.get_ref()};
     // warn!("Fetching user!");
-    let user_by_name = repo.get(name.to_string().borrow())?;
-    let user_by_id = repo.get_user_by_id(id)?;
+    match repo.get(name.to_string().borrow()){
+        Ok(_result) => {
+            info!("Found matching user! Deleting");
+            return Ok(Json(repo.delete(&name)?));
 
-    if user_by_name.name == user_by_id.name {
-        warn!("User name and id is matching, deleting user with id: {}", id);
-        return Ok(Json(repo.delete(&name)?));
-
-    }
-
-    return Err(BackendError { message: "User and id does not match".to_string(), kind: BackendErrorKind::FatalError });
+        }
+        Err(error) => {
+            error!("Something failed: {:?}", error);
+            return Err(BackendError{ message: "Failed to delete user!".to_string(), kind: BackendErrorKind::FatalError});
+        }
+    };
 
 
 }
@@ -246,9 +247,12 @@ async fn main() -> std::io::Result<()> {
 
 #[cfg(test)]
 mod tests {
+    use std::io::Bytes;
+
     use super::*;
-    use actix_http::http::Method;
-    use actix_web::{test, web, App};
+    use actix_http::{body::Body, http::Method};
+    use actix_web::{App, test, web::{self, json}};
+    use web::service;
 
     #[actix_rt::test]
     async fn test_login_with_no_credentials_throws_server_error() {
@@ -282,7 +286,7 @@ mod tests {
             .data(pool)
             .route("/login", web::get().to(login))
             .route("/register", web::post().to(add_user))
-            .route("/delete", web::delete().to(delete_user_rest)))
+            .service(resource("/delete/{name}").route(web::delete().to(delete_user_rest))))
             .await;
 
 
@@ -295,9 +299,21 @@ mod tests {
 
         let login = UserLogin{ name: "nobody".to_string(), password: "My secret 1234".to_string()};
         let req = test::TestRequest::with_header("content-type", "application/json").set_json(&login).method(Method::GET).uri("/login").to_request();
-        let resp = test::call_service(&mut app, req).await;
+        let mut resp = test::call_service(&mut app, req).await;
+
         assert!(resp.status().is_success());
 
+        let body = resp.take_body().as_ref().unwrap();
+
+        let body_string = String::from_utf8(&body.unwrap();
+        
+
+        // let delete_req = test::TestRequest::with_header("Authorization", format!("Bearer \"{}\"", body).set_payload("nobody").method(Method::DELETE).uri("/delete").to_request());
+        // let delete_resp = test::call_service(&mut app, req).await;
+
+        // assert!(delete_resp.status().is_success());
+
+        println!("NOOOO!");
     }
 
     #[actix_rt::test]
