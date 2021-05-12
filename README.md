@@ -38,3 +38,13 @@ docker container exec -i $(docker-compose ps -q postgres) psql --user user < db/
 export DATABASE_URL=postgres://user:user@localhost/user
 
 TODO: https://actix.rs/docs/databases/
+
+## Earthly
+https://earthly.dev/get-earthly
+
+brew install earthly && sudo earthly bootstrap
+
+See Earthfile for details
+earthly +test
+earthly +build
+earthly +docker
