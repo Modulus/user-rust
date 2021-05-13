@@ -45,6 +45,6 @@ https://earthly.dev/get-earthly
 brew install earthly && sudo earthly bootstrap
 
 See Earthfile for details
-earthly +test
+earthly --allow-privileged +test
 earthly +build
 earthly +docker

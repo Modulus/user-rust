@@ -4,13 +4,11 @@ WORKDIR /opt/app
 test:
     COPY . .
     ENV DATABASE_URL=postgres://user:user@localhost/user
-
+    ENV PATH="/usr/bin:${PATH}"
     WITH DOCKER --compose docker-compose.yaml --allow-privileged
         RUN while ! pg_isready --host=localhost --port=5432 --dbname=iso3166 --username=shot; do sleep 1; done ;\
             cargo test
     END     
-
-   
 build:
     COPY . .
     RUN cargo test
