@@ -251,7 +251,7 @@ mod tests {
 
     use super::*;
     use actix_http::{body::Body, http::Method};
-    use actix_web::{App, test, web::{self, json}};
+    use actix_web::{App, test, web::{self}};
     use web::service;
 
     #[actix_rt::test]
@@ -303,9 +303,9 @@ mod tests {
 
         assert!(resp.status().is_success());
 
-        let body = resp.take_body().as_ref().unwrap();
+        // let body = resp.take_body().as_ref().unwrap();
 
-        let body_string = String::from_utf8(&body.unwrap();
+        // let body_string = String::from(&body.into());
         
 
         // let delete_req = test::TestRequest::with_header("Authorization", format!("Bearer \"{}\"", body).set_payload("nobody").method(Method::DELETE).uri("/delete").to_request());
