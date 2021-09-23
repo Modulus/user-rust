@@ -48,3 +48,5 @@ See Earthfile for details
 earthly --allow-privileged +test
 earthly +build
 earthly +docker
+
+# Trigger build
