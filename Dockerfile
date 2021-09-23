@@ -1,4 +1,4 @@
-FROM rust:1.51-buster as builder
+FROM rust:1.55-buster as builder
 WORKDIR /opt/app
 COPY . /opt/app/
 RUN ls -la /opt/app
